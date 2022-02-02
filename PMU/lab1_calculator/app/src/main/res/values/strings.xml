@@ -1,22 +1,22 @@
 <resources>
     <string name="app_name">lab1_calculator</string>
-    <string name="_5">5</string>
+    <string name="c">C</string>
+    <string name="_erase">⌫</string>
     <string name="_7">7</string>
     <string name="_8">8</string>
     <string name="_9">9</string>
+    <string name="_div">÷</string>
     <string name="_4">4</string>
+    <string name="_5">5</string>
     <string name="_6">6</string>
+    <string name="_mul">×</string>
     <string name="_1">1</string>
     <string name="_2">2</string>
     <string name="_3">3</string>
-    <string name="_div">/</string>
-    <string name="_mul">*</string>
-    <string name="_minus">-</string>
-    <string name="_point">.</string>
+    <string name="_minus">—</string>
+    <string name="_dot">.</string>
     <string name="_0">0</string>
     <string name="_equal">=</string>
     <string name="_plus">+</string>
-    <string name="button">Button</string>
-    <string name="_erase">⌫</string>
-    <string name="c">C</string>
+    <string name="_error">Error</string>
 </resources>

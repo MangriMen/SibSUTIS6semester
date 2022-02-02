@@ -7,37 +7,39 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/tvMain"
+        android:id="@+id/tvBuffer"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="100dp"
         android:gravity="center_vertical"
         android:singleLine="true"
         android:textAlignment="viewEnd"
         android:textSize="48sp"
-        app:layout_constraintBottom_toTopOf="@+id/textView4"
+        app:layout_constraintBottom_toTopOf="@+id/tvNumber"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/tvNumber"
         android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:layout_height="200dp"
+        android:layout_marginBottom="1dp"
         android:gravity="center_vertical"
         android:textAlignment="viewEnd"
         android:textSize="48sp"
         app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvMain" />
+        app:layout_constraintTop_toBottomOf="@+id/tvBuffer" />
 
     <TableLayout
         android:id="@+id/layoutButtons"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvNumber">
 
         <TableRow
             android:layout_width="match_parent"
@@ -46,7 +48,7 @@
 
             <Button
                 android:id="@+id/btnEmpty0"
-                style="?android:attr/buttonBarButtonStyle"
+                style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -131,7 +133,7 @@
 
             <Button
                 android:id="@+id/btnDiv"
-                style="?android:attr/buttonBarButtonStyle"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="4dp"
@@ -266,8 +268,8 @@
                 android:layout_marginHorizontal="4dp"
                 android:layout_marginVertical="0dp"
                 android:layout_weight="1"
-                android:onClick="onDigitClick"
-                android:text="@string/_point"
+                android:onClick="onDotClick"
+                android:text="@string/_dot"
                 android:textSize="34sp" />
 
             <Button
@@ -284,7 +286,7 @@
 
             <Button
                 android:id="@+id/btnEquals"
-                style="?android:attr/buttonBarButtonStyle"
+                style="@style/Widget.AppCompat.Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="4dp"
@@ -304,9 +306,10 @@
                 android:layout_marginHorizontal="4dp"
                 android:layout_marginVertical="0dp"
                 android:layout_weight="1"
+                android:accessibilityHeading="false"
+                android:onClick="onActionClick"
                 android:text="@string/_plus"
-                android:textSize="34sp"
-                android:onClick="onActionClick" />
+                android:textSize="34sp" />
 
         </TableRow>
 
