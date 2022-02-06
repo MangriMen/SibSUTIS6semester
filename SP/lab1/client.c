@@ -15,9 +15,9 @@
 
 int main(int argc, char *argv[])
 {
-    int sock;
-    char buffer[BUFFLEN];
-    struct sockaddr_in serverAddr, clientAddr;
+    int sock = 0;
+    char buffer[BUFFLEN] = {'\0'};
+    struct sockaddr_in serverAddr = {}, clientAddr = {};
     struct hostent *hp, *gethostbyname();
 
     if (argc < 4)
@@ -32,23 +32,17 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    bzero((char *)&serverAddr, sizeof(serverAddr));
-
-    serverAddr.sin_family = AF_INET;
     hp = gethostbyname(argv[1]);
-    bcopy(hp->h_addr, &serverAddr.sin_addr, hp->h_length);
+
+    memset((char *)&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    memcpy(&serverAddr.sin_addr, hp->h_addr, hp->h_length);
     serverAddr.sin_port = htons(atoi(argv[2]));
 
-    bzero((char *)&clientAddr, sizeof(clientAddr));
-
+    memset((char *)&clientAddr, 0, sizeof(clientAddr));
     clientAddr.sin_family = AF_INET;
     clientAddr.sin_addr.s_addr = INADDR_ANY;
     clientAddr.sin_port = 0;
-
-    // if (bind(sock, &clientAddr, sizeof(clientAddr))){
-    //     perror("Клиент не получил порт.");
-    //     exit(1);
-    // }
 
     printf("Клиент: Готов к пересылке.\n");
     while (true)

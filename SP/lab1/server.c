@@ -23,7 +23,7 @@ void processingMessage(char *in_message, char *out_message, int size)
 int main()
 {
     int socketMain = 0, msgLength = 0;
-    struct sockaddr_in serverAddr, clientAddr;
+    struct sockaddr_in serverAddr = {}, clientAddr = {};
     char string_buff[BUFFLEN] = {'\0'};
     char in_buff[BUFFLEN] = {'\0'};
     char out_buff[BUFFLEN] = {'\0'};
@@ -35,7 +35,6 @@ int main()
     }
 
     memset((char *)&serverAddr, 0, sizeof(serverAddr));
-
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     serverAddr.sin_port = 0;
@@ -47,7 +46,6 @@ int main()
     }
 
     socklen_t length = sizeof(serverAddr);
-
     if (getsockname(socketMain, (struct sockaddr *)&serverAddr, &length))
     {
         perror("Вызов getsockname неудачен.");
@@ -56,8 +54,7 @@ int main()
 
     inet_ntop(AF_INET, &serverAddr.sin_addr, string_buff, BUFFLEN);
     printf("Сервер:\n");
-    printf("\tIP адрес: %s\n", string_buff);
-    printf("\tПорт: %d\n\n", ntohs(serverAddr.sin_port));
+    printf("\tIP: %s:%d\n", string_buff, ntohs(serverAddr.sin_port));
 
     listen(socketMain, 2);
 
@@ -84,9 +81,8 @@ int main()
 
         inet_ntop(AF_INET, &clientAddr.sin_addr, string_buff, BUFFLEN);
         printf("Сервер:\n");
-        printf("\tIP адрес клиента: %s\n", string_buff);
-        printf("\tPort клиента: %d\n", ntohs(clientAddr.sin_port));
-        printf("\tДлина сообщения - %d\n", msgLength);
+        printf("\tIP клиента: %s:%d\n", string_buff, ntohs(clientAddr.sin_port));
+        printf("\tДлина сообщения: %d\n", msgLength);
         printf("\tСообщение: %s\n\n", in_buff);
     }
 }
