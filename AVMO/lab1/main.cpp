@@ -124,7 +124,7 @@ public:
 		cout << "enter size (N [space] M [enter])" << endl;
 		long long n, m;
 		cin >> n >> m;
-		cin.ignore(_MAX_PATH, '\n');
+		cin.ignore(256, '\n');
 
 		cout << "enter matrix" << endl;
 		string line{};
