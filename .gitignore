@@ -482,3 +482,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Linux binaries
+*.out
