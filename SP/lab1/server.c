@@ -11,7 +11,6 @@
 #include <netdb.h>
 
 #define BUFFLEN 255
-#define SERVER "127.0.0.1"
 
 void processingMessage(char *in_message, char *out_message, int size)
 {

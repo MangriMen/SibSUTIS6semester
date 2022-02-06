@@ -12,7 +12,6 @@
 #include <stdbool.h>
 
 #define BUFFLEN 255
-#define SERVER "127.0.0.1"
 
 int main(int argc, char *argv[])
 {
