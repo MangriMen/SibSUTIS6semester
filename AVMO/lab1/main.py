@@ -1,4 +1,5 @@
 import math
+import sys
 
 
 class Fractions:
@@ -181,8 +182,10 @@ class Solver:
 
 
 def main():
-    # solver = Solver(input())
-    solver = Solver("system.txt")
+    if sys.argv[1]:
+        solver = Solver(sys.argv[1])
+    else:
+        solver = Solver(input())
     solver.solve()
 
 
