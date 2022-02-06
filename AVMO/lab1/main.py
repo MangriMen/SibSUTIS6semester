@@ -105,10 +105,10 @@ class Solver:
 
 
 def main():
-    if sys.argv[1]:
+    if len(sys.argv) > 1 and sys.argv[1]:
         solver = Solver(sys.argv[1])
     else:
-        solver = Solver(input())
+        solver = Solver(input("Input data filename: "))
     solver.solve()
 
 
