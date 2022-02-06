@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        bzero(buffer, sizeof(BUFFLEN));
+        memset((char *)&buffer, 0, sizeof(buffer));
         int slen = sizeof(serverAddr);
 
         if ((recvfrom(sock, (char *)buffer, BUFFLEN, 0,
