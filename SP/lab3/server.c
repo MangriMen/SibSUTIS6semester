@@ -20,13 +20,16 @@
 typedef struct thread_data
 {
     int socketId;
+    FILE *log_file;
 } thread_data_t;
 
 void *threadListener(void *args)
 {
     pthread_detach(pthread_self());
 
-    int sockClient = ((thread_data_t *)args)->socketId;
+    thread_data_t *data = (thread_data_t *)args;
+    int sockClient = data->socketId;
+    FILE *log_file = data->log_file;
     char buf[BUFLEN] = {'\0'};
 
     while (true)
@@ -49,6 +52,11 @@ void *threadListener(void *args)
         printf("Сервер: Socket для клиента: %d\n", sockClient);
         printf("\tДлина сообщения: %d\n", msgLength);
         printf("\tСообщение: %s\n\n", buf);
+
+        flockfile(log_file);
+        fprintf(log_file, "%d:%s\n", sockClient, buf);
+        funlockfile(log_file);
+        fflush(log_file);
     }
 }
 
@@ -57,6 +65,7 @@ int main()
     int sockMain = 0;
     int length = 0;
     struct sockaddr_in servAddr;
+    FILE *log_file = fopen("data.log", "w+");
 
     if ((sockMain = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -98,7 +107,7 @@ int main()
             exit(1);
         }
 
-        thread_data_t data = {socketClient};
+        thread_data_t data = {socketClient, log_file};
 
         pthread_t new_thread = 0;
         if (pthread_create(&new_thread, NULL, threadListener, (void *)&data))
