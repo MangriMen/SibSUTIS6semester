@@ -11,19 +11,15 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#define BUFLEN 255
-
 int main(int argc, char *argv[])
 {
     int sock = 0;
     struct sockaddr_in servAddr = {};
-    struct hostent *hp, *gethostbyname();
-    char *console_buffer = NULL;
-    size_t console_len = 0;
+    struct hostent *hp;
 
-    if (argc < 3)
+    if (argc < 4)
     {
-        printf("TCP Client. Введите: имя_хоста порт\n");
+        printf("TCP Client. Введите: имя_хоста порт сообщение\n");
         exit(1);
     }
 
@@ -47,38 +43,17 @@ int main(int argc, char *argv[])
     }
 
     printf("Клиент: Готов к пересылке\n");
-
     while (true)
     {
-        if (argc == 4 && atoi(argv[3]))
+        if (send(sock, argv[3], strlen(argv[3]), 0) < 0)
         {
-            if (send(sock, argv[3], strlen(argv[3]), 0) < 0)
-            {
-                perror("Проблемы с пересылкой.\n");
-                exit(1);
-            }
-
-            sleep(atoi(argv[3]));
+            perror("Проблемы с пересылкой.\n");
+            exit(1);
         }
-        else
-        {
-            getline(&console_buffer, &console_len, stdin);
-            console_buffer[strcspn(console_buffer, "\r\n")] = 0;
-            if (strcmp(console_buffer, "/exit") == 0)
-            {
-                break;
-            }
 
-            if (send(sock, console_buffer, console_len, 0) < 0)
-            {
-                perror("Проблемы с пересылкой.\n");
-                exit(1);
-            }
-        }
+        sleep(atoi(argv[3]));
     }
-
     printf("Клиент: Отключён от сервера.\n");
-
     close(sock);
 
     return 0;
