@@ -50,17 +50,30 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        getline(&console_buffer, &console_len, stdin);
-        console_buffer[strcspn(console_buffer, "\r\n")] = 0;
-        if (strcmp(console_buffer, "/exit") == 0)
+        if (argc == 4 && atoi(argv[3]))
         {
-            break;
-        }
+            if (send(sock, argv[3], strlen(argv[3]), 0) < 0)
+            {
+                perror("Проблемы с пересылкой.\n");
+                exit(1);
+            }
 
-        if (send(sock, console_buffer, console_len, 0) < 0)
+            sleep(atoi(argv[3]));
+        }
+        else
         {
-            perror("Проблемы с пересылкой.\n");
-            exit(1);
+            getline(&console_buffer, &console_len, stdin);
+            console_buffer[strcspn(console_buffer, "\r\n")] = 0;
+            if (strcmp(console_buffer, "/exit") == 0)
+            {
+                break;
+            }
+
+            if (send(sock, console_buffer, console_len, 0) < 0)
+            {
+                perror("Проблемы с пересылкой.\n");
+                exit(1);
+            }
         }
     }
 
