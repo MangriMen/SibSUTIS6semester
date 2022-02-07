@@ -1,4 +1,3 @@
-import math
 import sys
 from my_fraction import Fraction
 
@@ -55,7 +54,17 @@ class Solver:
             print()
             self.print_matrix()
 
-        no_answer = False
+        if not self.has_answers():
+            print("\nNo answer")
+            return
+
+        self.print_answer()
+
+    def is_one(self, fraction):
+        return abs(fraction.numerator) == 1 and abs(fraction.denominator) == 1
+
+    def has_answers(self):
+        has_answers = True
         for i in range(len(self.matrix)):
             max_el = max(self.matrix[i][:-1], key=lambda p: p.numerator)
             min_el = min(self.matrix[i][:-1], key=lambda p: p.numerator)
@@ -67,41 +76,29 @@ class Solver:
                     print()
                     self.print_matrix()
                 else:
-                    no_answer = True
-
-        if no_answer:
-            print("\nNo answer")
-            return
-
-        print("\nAnswer:")
-
-        for i in range(len(self.matrix)):
-            number_of_x = 0
-            for j in range(len(self.matrix[i]) - 1):
-                if self.matrix[i][j].numerator:
-                    if number_of_x:
-                        print(" + ", end="")
-
-                    if abs(self.matrix[i][j].numerator) == 1 \
-                            and abs(self.matrix[i][j].denominator) == 1:
-                        if self.matrix[i][j].sign() == "-" and number_of_x == 0:
-                            print(f"{self.matrix[i][j].sign()}x{j+1}", end="")
-                        elif number_of_x == 0:
-                            print(f"x{j+1}", end="")
-                        else:
-                            print(f"{self.matrix[i][j].sign()}x{j+1}", end="")
-                    else:
-                        print(f"{self.matrix[i][j]}x{j + 1}", end="")
-
-                    number_of_x += 1
-
-            print(f" = {self.matrix[i][-1]}")
+                    has_answers = False
+        return has_answers
 
     def print_matrix(self):
         for line in self.matrix:
             for item in line:
                 print(str(item) + " ", end="")
             print()
+
+    def print_answer(self):
+        print("\nAnswer:")
+        for i in range(len(self.matrix)):
+            number_of_x = 0
+            for j in range(len(self.matrix[i]) - 1):
+                if self.matrix[i][j].numerator:
+                    print(f"{' + ' if number_of_x else ''}", end="")
+
+                    print(
+                        f"{self.matrix[i][j].neg_sign() if self.is_one(self.matrix[i][j]) else self.matrix[i][j]}x{j + 1}", end="")
+
+                    number_of_x += 1
+
+            print(f" = {self.matrix[i][-1]}")
 
 
 def main():
