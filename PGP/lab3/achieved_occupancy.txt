@@ -1,0 +1,9 @@
+==26640== NVPROF is profiling process 26640, command: ./lab2.out
+==26640== Profiling application: ./lab2.out
+==26640== Profiling result:
+==26640== Metric result:
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "GeForce GTX 1050 (0)"
+    Kernel: vector_add(float*, float*)
+         10                        achieved_occupancy                        Achieved Occupancy    0.305401    0.875412    0.575995
+======== Error: Application received signal 139
