@@ -44,36 +44,6 @@ class Solver:
 
             print()
             self.print_matrix()
-        # for row in range(len(self.matrix)):
-        #     nuls = False
-        #     if self.matrix[row][row] == 0:
-        #         nuls = True
-        #         for item in range(row + 1, len(self.matrix)):
-        #             if self.matrix[item][item] != 0:
-        #                 self.matrix[item][item], self.matrix[row][row] = self.matrix[row][row], self.matrix[item][item]
-        #                 nuls = False
-
-        #     if nuls:
-        #         continue
-
-        #     for col in range(len(self.matrix[row])):
-        #         if col == row:
-        #             continue
-        #         self.matrix[row][col] /= self.matrix[row][row]
-
-        #     self.matrix[row][row] = Fraction(1, 1)
-
-        #     for i in range(len(self.matrix)):
-        #         if i == row:
-        #             continue
-        #         factor = self.matrix[i][row] / self.matrix[row][row]
-
-        #         for col in range(row, len(self.matrix[i])):
-        #             self.matrix[i][col] -= self.matrix[row][col] * factor
-        #             self.matrix[i][col].normalize()
-
-        #     print()
-        #     self.print_matrix()
 
         if not self.has_answers():
             print("\nNo answer")
