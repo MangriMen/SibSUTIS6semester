@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        bzero(buffer, sizeof(BUFFLEN));
+        memset((char *)&buffer, 0, BUFFLEN);
         int slen = sizeof(serverAddr);
 
         if ((recvfrom(sock, (char *)buffer, BUFFLEN, 0,
@@ -70,4 +70,6 @@ int main(int argc, char *argv[])
 
     printf("Клиент: Пересылка завершена.\n");
     close(sock);
+
+    return 0;
 }
