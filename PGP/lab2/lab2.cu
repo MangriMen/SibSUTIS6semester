@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
 
         cudaEventRecord(start, 0);
         vector_add<<<dim3(blocks), dim3(threads)>>>(cu_arr1, cu_arr2);
+        cudaDeviceSynchronize();
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);
 
