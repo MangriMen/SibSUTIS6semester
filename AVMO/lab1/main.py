@@ -76,9 +76,17 @@ class Solver:
         return has_answers
 
     def print_matrix(self):
-        for line in self.matrix:
+        max_lenght = [0 for _ in range(len(self.matrix[0]))]
+        for i in range(len(self.matrix[0])):
+            for j in range(len(self.matrix)):
+                if len(str(self.matrix[j][i])) > max_lenght[i]:
+                    max_lenght[i] = len(str(self.matrix[j][i]))
+
+        max_l = max(max_lenght)
+
+        for i, line in enumerate(self.matrix):
             for item in line:
-                print("%5s" % item, end="")
+                print(("%" + str(max_l + 2) + "s") % item, end="")
             print()
 
     def print_answer(self):
@@ -136,7 +144,8 @@ class Solver:
             if j not in simple_x_indexes.values():
                 any_str += f"x{j + 1}, "
 
-        print(f"{any_str[:-2]} - any")
+        if any_str:
+            print(f"{any_str[:-2]} - any")
 
 
 def main():
