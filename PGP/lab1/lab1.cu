@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 
     auto timer_start = chrono::high_resolution_clock::now();
     vector_add<<<dim3(blocks), dim3(threads)>>>(cu_arr1, cu_arr2);
+    cudaDeviceSynchronize();
     auto timer_stop = chrono::high_resolution_clock::now();
 
     auto duration = chrono::duration_cast<chrono::nanoseconds>(timer_stop - timer_start);
