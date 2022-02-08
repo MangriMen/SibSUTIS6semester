@@ -25,6 +25,12 @@ class Fraction:
 
         return "+"
 
+    def neg_sign(self):
+        if self.numerator < 0:
+            return "-"
+
+        return ""
+
     def __add__(self, other):
         temp = Fraction()
         temp.numerator = self.numerator * other.denominator \
