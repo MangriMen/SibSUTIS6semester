@@ -41,53 +41,6 @@ __global__ void gTranspose0(float *storage_d, float *storage_d_t)
     storage_d_t[j + i * N] = storage_d[i + j * N];
 }
 
-__global__ void gTranspose11(float *storage_d, float *storage_d_t)
-{
-    extern __shared__ float buffer[];
-    int i = threadIdx.x + blockIdx.x * blockDim.x;
-    int j = threadIdx.y + blockIdx.y * blockDim.y;
-    int N = blockDim.x * gridDim.x;
-
-    buffer[threadIdx.y + threadIdx.x * blockDim.y] = storage_d[i + j * N];
-
-    __syncthreads();
-
-    i = threadIdx.x + blockIdx.y * blockDim.x;
-    j = threadIdx.y + blockIdx.x * blockDim.y;
-
-    storage_d_t[i + j * N] = buffer[threadIdx.x + threadIdx.y * blockDim.x];
-}
-
-#define SH_DIM 32
-__global__ void gTranspose12(float *storage_d, float *storage_d_t)
-{
-    __shared__ float buffer_s[SH_DIM][SH_DIM];
-    int i = threadIdx.x + blockIdx.x * blockDim.x;
-    int j = threadIdx.y + blockIdx.y * blockDim.y;
-    int N = blockDim.x * gridDim.x;
-    buffer_s[threadIdx.y][threadIdx.x] = storage_d[i + j * N];
-    __syncthreads();
-    i = threadIdx.x + blockIdx.y * blockDim.x;
-    j = threadIdx.y + blockIdx.x * blockDim.y;
-    storage_d_t[i + j * N] = buffer_s[threadIdx.x][threadIdx.y];
-}
-
-__global__ void gTranspose2(float *storage_d, float *storage_d_t)
-{
-    __shared__ float buffer[SH_DIM][SH_DIM + 1];
-    int i = threadIdx.x + blockIdx.x * blockDim.x;
-    int j = threadIdx.y + blockIdx.y * blockDim.y;
-    int N = blockDim.x * gridDim.x;
-
-    buffer[threadIdx.y][threadIdx.x] = storage_d[i + j * N];
-
-    __syncthreads();
-
-    i = threadIdx.x + blockIdx.y * blockDim.x;
-    j = threadIdx.y + blockIdx.x * blockDim.y;
-    storage_d_t[i + j * N] = buffer[threadIdx.x][threadIdx.y];
-}
-
 void matrixPrint(float *matrix, int size)
 {
     for (int i = 0; i < size; i++)
@@ -189,40 +142,6 @@ int main(int argc, char *argv[])
     CUDA_CHECK_RETURN(cudaMemcpy(storage_h, storage_d_t, N * N * sizeof(float), cudaMemcpyDeviceToHost));
 
     cout << "gTranspose0" << endl;
-    matrixPrint(storage_h, N);
-
-    // gTranspose 1
-    gTranspose11<<<dim3(dim_of_blocks, dim_of_blocks),
-                   dim3(dim_of_threads, dim_of_threads),
-                   dim_of_threads * dim_of_threads * sizeof(float)>>>(storage_d, storage_d_t);
-    cudaDeviceSynchronize();
-
-    fill(storage_h, storage_h + (N * N), 0.0f);
-    CUDA_CHECK_RETURN(cudaMemcpy(storage_h, storage_d_t, N * N * sizeof(float), cudaMemcpyDeviceToHost));
-
-    cout << "gTranspose1" << endl;
-    matrixPrint(storage_h, N);
-
-    // gTranspose12
-    gTranspose12<<<dim3(dim_of_blocks, dim_of_blocks),
-                   dim3(dim_of_threads, dim_of_threads)>>>(storage_d, storage_d_t);
-    cudaDeviceSynchronize();
-
-    fill(storage_h, storage_h + (N * N), 0.0f);
-    cudaMemcpy(storage_h, storage_d_t, N * N * sizeof(float), cudaMemcpyDeviceToHost);
-
-    cout << "gTranspose12" << endl;
-    matrixPrint(storage_h, N);
-
-    // gTranspose2
-    gTranspose2<<<dim3(dim_of_blocks, dim_of_blocks),
-                  dim3(dim_of_threads, dim_of_threads)>>>(storage_d, storage_d_t);
-    cudaDeviceSynchronize();
-
-    fill(storage_h, storage_h + (N * N), 0.0f);
-    cudaMemcpy(storage_h, storage_d_t, N * N * sizeof(float), cudaMemcpyDeviceToHost);
-
-    cout << "gTranspose2" << endl;
     matrixPrint(storage_h, N);
 
     // Clearing memory
