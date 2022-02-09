@@ -49,9 +49,8 @@ class Solver:
             print("\nNo answer")
             return
 
-        self.print_answer()
-
-        self.print_common_answer()
+        if self.print_answer() > len(self.matrix[0][:-1]):
+            self.print_common_answer()
 
     def is_one(self, fraction):
         return abs(fraction.numerator) == 1 and abs(fraction.denominator) == 1
@@ -91,6 +90,7 @@ class Solver:
 
     def print_answer(self):
         print("\nAnswer:")
+        all_number_of_x = 0
         for i in range(len(self.matrix)):
             number_of_x = 0
             for j in range(len(self.matrix[i]) - 1):
@@ -103,9 +103,12 @@ class Solver:
                     number_of_x += 1
 
             print(f" = {self.matrix[i][-1]}")
+            all_number_of_x += number_of_x
 
-    def print_common_answer(self):
-        print("\nCommon answer:")
+        return all_number_of_x
+
+    def print_general_answer(self):
+        print("\nGeneral answer:")
         simple_x_indexes = dict()
         for i in range(len(self.matrix)):
             number_of_x = 0
