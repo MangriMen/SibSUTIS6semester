@@ -30,6 +30,7 @@ class Solver:
                         if calc_row != row:
                             self.matrix[calc_row][calc_col] -= (
                                 self.matrix[row][calc_col] * self.matrix[calc_row][row]) / self.matrix[row][row]
+
                 for col in range(len(self.matrix[row])):
                     if col != row:
                         self.matrix[row][col] /= self.matrix[row][row]
@@ -50,7 +51,7 @@ class Solver:
             return
 
         if self.print_answer() > len(self.matrix[0][:-1]):
-            self.print_common_answer()
+            self.print_general_answer()
 
     def is_one(self, fraction):
         return abs(fraction.numerator) == 1 and abs(fraction.denominator) == 1
