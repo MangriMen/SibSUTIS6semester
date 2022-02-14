@@ -1,11 +1,7 @@
 import copy
 import itertools
 import math
-from re import A
 import sys
-from itertools import permutations
-from tkinter.messagebox import NO
-from turtle import RawPen
 from my_fraction import Fraction
 
 
