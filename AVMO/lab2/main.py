@@ -65,7 +65,8 @@ class Solver:
         variants_count = int(math.factorial(
             variables_count) / (math.factorial(rang) * math.factorial(variables_count - rang)))
 
-        print("\nAll possible inclusions of variables:")
+        print("\nAll possible inclusions of variables " +
+              f"({variants_count}):")
         numbers = ''.join([str(x) for x in range(len(self.matrix[0][:-1]))])
         variants_count_list = [[int(x) for x in tup]
                                for tup in itertools.combinations(numbers, rang)]
@@ -86,14 +87,11 @@ class Solver:
 
             is_no_answer = False
             for row in range(len(copy_matrix)):
-                result = all(
+                is_no_answer |= all(
                     element == copy_matrix[row][0] for element in [copy_matrix[row][x] for x in inclusion])
-                if result:
-                    print("Answer: ∅\n")
-                    is_no_answer = True
-                    break
 
             if is_no_answer:
+                print("Answer: ∅\n")
                 continue
 
             need_to_recalculate = True
