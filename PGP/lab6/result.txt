@@ -1,0 +1,4 @@
+(base) IP-916@linux-47dw:~/brigMenschikovIsmailov/lab6> ./lab6_1.out && ./lab6_2.out && ./lab6_3.out
+Time taken: 672.1 ms
+Time taken: 664.8 ms
+Time taken: 665.5 ms
