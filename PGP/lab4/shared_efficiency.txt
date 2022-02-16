@@ -1,0 +1,25 @@
+==18174== NVPROF is profiling process 18174, command: ./lab4.out 256 32
+==18174== Some kernel(s) will be replayed on device 0 in order to collect all events/metrics.
+Replaying kernel "gInitializeStorage(float*)" (done)
+Replaying kernel "gInitializeStorageInvert(float*)" (done)
+Replaying kernel "gTranspose0(float*, float*)" (done)
+Replaying kernel "gTranspose11(float*, float*)" (done)
+Replaying kernel "gTranspose12(float*, float*)" (done)
+Replaying kernel "gTranspose2(float*, float*)" (done)
+==18174== Profiling application: ./lab4.out 256 32
+==18174== Profiling result:
+==18174== Metric result:
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "GeForce GTX 1050 (0)"
+    Kernel: gTranspose0(float*, float*)
+          1                         shared_efficiency                  Shared Memory Efficiency       0.00%       0.00%       0.00%
+    Kernel: gTranspose2(float*, float*)
+          1                         shared_efficiency                  Shared Memory Efficiency     100.00%     100.00%     100.00%
+    Kernel: gInitializeStorageInvert(float*)
+          1                         shared_efficiency                  Shared Memory Efficiency       0.00%       0.00%       0.00%
+    Kernel: gTranspose11(float*, float*)
+          1                         shared_efficiency                  Shared Memory Efficiency       6.06%       6.06%       6.06%
+    Kernel: gTranspose12(float*, float*)
+          1                         shared_efficiency                  Shared Memory Efficiency       6.06%       6.06%       6.06%
+    Kernel: gInitializeStorage(float*)
+          1                         shared_efficiency                  Shared Memory Efficiency       0.00%       0.00%       0.00%
