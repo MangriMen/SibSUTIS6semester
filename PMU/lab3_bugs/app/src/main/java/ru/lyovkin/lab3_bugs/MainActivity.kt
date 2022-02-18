@@ -15,7 +15,10 @@ class MainActivity : AppCompatActivity() {
 
         val gameView = Game(this)
         setContentView(gameView)
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
 
         val handler = Handler()
         val gameTimer = Timer()

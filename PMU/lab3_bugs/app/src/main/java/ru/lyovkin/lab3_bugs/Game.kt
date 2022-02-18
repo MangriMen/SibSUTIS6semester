@@ -1,13 +1,11 @@
 package ru.lyovkin.lab3_bugs
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Typeface
+import android.graphics.*
 import android.text.method.Touch.onTouchEvent
 import android.view.MotionEvent
 import android.view.View
+import java.lang.Thread.sleep
 
 class Game(context: Context) : View(context) {
     enum class State {
@@ -15,9 +13,21 @@ class Game(context: Context) : View(context) {
         Pause
     }
 
-    private val textStyle : Paint = Paint()
-    private var currentState : State = State.Play
-    private var msgPause = ""
+    private val level: Level = Level(this,5)
+    private val textStyle: Paint = Paint()
+    private val additionalTextStyle: Paint = Paint()
+
+    companion object {
+        private var timer = System.currentTimeMillis()
+        private var currentState: State = State.Play
+        private var msgPause = ""
+
+        fun pause(msg: String) {
+            currentState = State.Pause
+            timer = System.currentTimeMillis()
+            msgPause = msg
+        }
+    }
 
     init {
         textStyle.color = Color.WHITE
@@ -25,6 +35,14 @@ class Game(context: Context) : View(context) {
         textStyle.textSize = 75F
         textStyle.typeface = Typeface.DEFAULT_BOLD
         textStyle.isAntiAlias = true
+
+        additionalTextStyle.color = Color.WHITE
+        additionalTextStyle.textAlign = Paint.Align.CENTER
+        additionalTextStyle.textSize = 50F
+        additionalTextStyle.typeface = Typeface.DEFAULT_BOLD
+        additionalTextStyle.isAntiAlias = true
+
+        setBackgroundColor(Color.DKGRAY)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -32,23 +50,39 @@ class Game(context: Context) : View(context) {
 
         when(currentState) {
             State.Play -> {
-                Level.update()
-                Level.draw(canvas)
+                level.update()
+                level.draw(canvas)
             }
             State.Pause -> {
-                canvas?.drawText(
+                canvas!!.drawText(
                     msgPause,
                     width / 2F,
-                    60F,
+                    height / 2F,
                     textStyle
+                )
+
+                canvas!!.drawText(
+                    "для продолжения нажмите на экран",
+                    width / 2F,
+                    height - 200F,
+                    additionalTextStyle
                 )
             }
         }
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (event?.action == MotionEvent.ACTION_DOWN) {
-            return Level.onTouchEvent(event.x, event.y)
+        when(currentState) {
+            State.Play -> {
+                if (event?.action == MotionEvent.ACTION_DOWN) {
+                    return level.onTouchEvent(event)
+                }
+            }
+            State.Pause -> {
+                if (System.currentTimeMillis() > timer + 450) {
+                    currentState = State.Play
+                }
+            }
         }
 
         return super.onTouchEvent(event)
