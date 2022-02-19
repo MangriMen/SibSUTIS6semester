@@ -11,7 +11,6 @@ import android.view.animation.RotateAnimation
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import kotlin.math.abs
 import kotlin.math.round
 
 
