@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">lab5_database</string>
+    <string name="generate">Generate</string>
+    <string name="clear_database">Clear database</string>
+</resources>
