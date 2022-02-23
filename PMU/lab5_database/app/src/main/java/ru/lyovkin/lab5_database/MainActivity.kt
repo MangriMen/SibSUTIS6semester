@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         db.execSQL("CREATE TABLE IF NOT EXISTS students (name TEXT, weight INTEGER, height INTEGER, age INTEGER);")
 
         for (i in 1..10) {
-            val name = "Студент " + ThreadLocalRandom.current().nextInt(0, 3).toString()
+            val name = "Студент " + ThreadLocalRandom.current().nextInt(0, 30).toString()
             val weight = ThreadLocalRandom.current().nextInt(50, 100)
             val height = ThreadLocalRandom.current().nextInt(160, 200)
             val age = ThreadLocalRandom.current().nextInt(18, 25)
