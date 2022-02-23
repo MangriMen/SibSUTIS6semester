@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun clearDatabase() {
         val db = baseContext.openOrCreateDatabase(dbName, dbMode, null)
-        db.execSQL("DROP TABLE IF EXISTS students")
+        db.execSQL("DELETE FROM students")
         db.close()
     }
 
