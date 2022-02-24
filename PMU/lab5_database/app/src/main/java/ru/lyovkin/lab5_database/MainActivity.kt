@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         val db = baseContext.openOrCreateDatabase(dbName, dbMode, null)
         db.execSQL("CREATE TABLE IF NOT EXISTS students (name TEXT, weight INTEGER, height INTEGER, age INTEGER);")
 
-        val query: Cursor = db.rawQuery("SELECT * FROM students;", null)
+        val query: Cursor = db.rawQuery("SELECT * FROM students ORDER BY name;", null)
         while (query.moveToNext()) {
             val newRow = TableRow(this)
             newRow.addView(createTextView(this, query.getString(0), params, Gravity.CENTER, 20F))
