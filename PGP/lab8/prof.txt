@@ -1,0 +1,1 @@
+./make; clear; nvprof .\lab8_thrust.exe > $null; nvprof .\lab8_cublas.exe > $null
