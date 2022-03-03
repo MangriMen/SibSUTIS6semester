@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">lab4_compass</string>
+    <string name="compass_image">Compass image</string>
+    <string name="_0">0</string>
+</resources>
