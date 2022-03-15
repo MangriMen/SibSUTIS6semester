@@ -3,7 +3,18 @@
 const int FTP_CONTROL_PORT = 21;
 static int socket_main = 0;
 static int socket_data = 0;
-static const char welcome_message[] = "220-myFTP\n";
+static const char welcome_message[] = "220 myFTP\n";
+
+char *replace_char(char *str, char find, char replace)
+{
+    char *current_pos = strchr(str, find);
+    while (current_pos)
+    {
+        *current_pos = replace;
+        current_pos = strchr(current_pos, find);
+    }
+    return str;
+}
 
 char **ftp_parse_message(char *message)
 {
@@ -52,6 +63,16 @@ int ftp_create_bind_socket(int domain, int type, int protocol, int ip, uint16_t 
     }
 
     return new_socket;
+}
+
+char *ftp_get_passive_address(int domain, const void *src)
+{
+    size_t address_length = (domain == AF_INET) ? INET_ADDRSTRLEN : INET6_ADDRSTRLEN;
+    char *address = (char *)(calloc(address_length, sizeof(char)));
+
+    inet_ntop(domain, src, address, address_length);
+
+    return replace_char(address, '.', ',');
 }
 
 void ftp_get_passive_port(uint16_t port, uint16_t *p1, uint16_t *p2)
@@ -158,12 +179,14 @@ int ftp_create_main_listener(int domain, int ip)
                     return -1;
                 }
 
+                char *address = ftp_get_passive_address(domain, &data_address.sin_addr);
+
                 uint16_t p1 = 0;
                 uint16_t p2 = 0;
                 ftp_get_passive_port(ntohs(data_address.sin_port), &p1, &p2);
 
                 char answer[1024] = {'\0'};
-                sprintf(answer, "227 (127,0,0,1,%d,%d)\n", p1, p2);
+                sprintf(answer, "227 Entering Passive Mode (%s,%d,%d)\n", address, p1, p2);
                 result_send = send(socket_client, answer, sizeof(answer), 0);
 
                 res = accept(socket_data, NULL, NULL);
@@ -175,14 +198,14 @@ int ftp_create_main_listener(int domain, int ip)
                 }
 
                 char answer[1024] = {'\0'};
-                sprintf(answer, "550\n");
+                sprintf(answer, "150\n");
                 result_send = send(socket_client, answer, sizeof(answer), 0);
 
-                // sprintf(answer, "drwxrwxrwx 1 ftp ftp               0 Jan 16 00:02 BeamNG.drive 0.23.1.0\r\n");
+                sprintf(answer, "drwxrwxrwx 1 ftp ftp               0 Jan 16 00:02 BeamNG.drive 0.23.1.0\n");
 
-                // result_send = send(res, answer, sizeof(answer), 0);
+                result_send = send(res, answer, sizeof(answer), 0);
 
-                // result_send = send(socket_client, "226\n", sizeof("226\n"), 0);
+                result_send = send(socket_client, "226\n", sizeof("226\n"), 0);
 
                 // char data[3072] = {'\0'};
                 // FILE *pf = popen("ls -lt", "r");
@@ -210,9 +233,8 @@ int ftp_create_main_listener(int domain, int ip)
             }
             else if (strcmp(msg[0], "QUIT") == 0)
             {
-                close(socket_data);
                 close(socket_client);
-                break;
+                close(socket_data);
             }
             else
             {
