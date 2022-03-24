@@ -1,6 +1,6 @@
 VERSION 	=1.00
 CC			=gcc
-DEBUG 		=
+DEBUG 		=-g
 CFLAGS		=-Wall -Werror -Wextra
 BINARIES	=bin
 SOURCES	 	=$(wildcard ./src/*.c)
