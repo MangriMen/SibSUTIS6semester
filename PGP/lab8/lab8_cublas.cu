@@ -4,6 +4,18 @@
 
 int main()
 {
+    cudaEvent_t startAll;
+    cudaEvent_t startFunc;
+    cudaEvent_t endFunc;
+    cudaEvent_t endAll;
+
+    cudaEventCreate(&startAll);
+    cudaEventCreate(&startFunc);
+    cudaEventCreate(&endFunc);
+    cudaEventCreate(&endAll);
+
+    cudaEventRecord(startAll);
+
     const int num_elem = 1 << 24;
     const size_t size_in_bytes = (num_elem * sizeof(float));
 
@@ -46,8 +58,12 @@ int main()
     // выполнение SingleAlphaXPlusY
     const int stride = 1;
     float alpha = 2.0F;
+    cudaEventRecord(startFunc);
+
     cublasSaxpy(cublas_handle, num_elem, &alpha, A_dev,
                 stride, B_dev, stride);
+
+    cudaEventRecord(endFunc);
 
     //Копирование матриц с числом строк num_elem и одним столбцом с
     //устройства на хост
@@ -67,6 +83,22 @@ int main()
     cudaFreeHost(A_h);
     cudaFreeHost(A_h);
     cudaFreeHost(B_h);
+
+    cudaEventRecord(endAll);
+
+    float func_time = 0;
+    cudaEventElapsedTime(&func_time, startFunc, endFunc);
+
+    float program_time = 0;
+    cudaEventElapsedTime(&program_time, startAll, endAll);
+
+    printf("SAXPY: %f\n", func_time);
+    printf("Program: %f\n", program_time);
+
+    cudaEventDestroy(startFunc);
+    cudaEventDestroy(startAll);
+    cudaEventDestroy(endFunc);
+    cudaEventDestroy(endAll);
 
     cudaDeviceReset();
 
