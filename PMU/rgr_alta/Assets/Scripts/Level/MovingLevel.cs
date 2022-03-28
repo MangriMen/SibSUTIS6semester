@@ -25,17 +25,19 @@ public class MovingLevel : MonoBehaviour
     {
         if (!isRestart)
         {
-            if (!sprite.isVisible || (endMark && transform.position.y - sprite.bounds.size.y / 2 <= endMark.position.y))
+            if (endMark && transform.position.y - sprite.bounds.size.y / 2 <= endMark.position.y)
             {
+                Destroy(gameObject, 0.5f);
                 return;
             }
         }
+
+        speed += speedIncrease * Time.deltaTime;
         transform.Translate(Vector3.down * speed * Time.deltaTime);
         if (isRestart && transform.position.y <= -positionY)
         {
             transform.position = restartPos;
         }
-        speed += speedIncrease * Time.deltaTime;
     }
 
 }
