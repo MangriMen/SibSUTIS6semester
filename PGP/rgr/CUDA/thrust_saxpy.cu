@@ -25,7 +25,7 @@ void saxpy(float a, thrust::device_vector<float> &x,
 
 int main()
 {
-    const int n = 10 << 20;
+    const int n = 1 << 24;
 
     cudaEvent_t startGlobal;
     cudaEvent_t endGlobal;
@@ -69,5 +69,5 @@ int main()
     cudaEventDestroy(startLocal);
     cudaEventDestroy(endLocal);
 
-    return 0;
+    return EXIT_SUCCESS;
 }

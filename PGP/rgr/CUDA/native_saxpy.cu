@@ -12,13 +12,13 @@ __global__ void saxpy(int n, float a, float *__restrict x, float *__restrict y)
 
 int main()
 {
-    const int n = 1 << 20;
+    const int n = 1 << 24;
 
-    cudaEvent_t startGlobal, stopGlobal, startLocal, stopLocal;
+    cudaEvent_t startGlobal, endGlobal, startLocal, endLocal;
     cudaEventCreate(&startGlobal);
-    cudaEventCreate(&stopGlobal);
+    cudaEventCreate(&endGlobal);
     cudaEventCreate(&startLocal);
-    cudaEventCreate(&stopLocal);
+    cudaEventCreate(&endLocal);
 
     cudaEventRecord(startGlobal);
 
@@ -26,8 +26,9 @@ int main()
     float *hostArrRes = (float *)malloc(n * sizeof(float));
 
     float *cudaArr = NULL;
-    float *cudaArrRes = NULL;
     cudaMalloc((void **)&cudaArr, (n) * sizeof(float));
+
+    float *cudaArrRes = NULL;
     cudaMalloc((void **)&cudaArrRes, (n) * sizeof(float));
 
     for (int i = 0; i < n; i++)
@@ -39,26 +40,26 @@ int main()
 
     cudaEventRecord(startLocal);
     saxpy<<<4096, 256>>>(n, 2.0, cudaArr, cudaArrRes);
-    cudaEventRecord(stopLocal);
-    cudaEventSynchronize(stopLocal);
+    cudaEventRecord(endLocal);
+    cudaEventSynchronize(endLocal);
 
     cudaMemcpy(hostArrRes, cudaArrRes + 1, n * sizeof(float), cudaMemcpyDeviceToHost);
 
-    cudaEventRecord(stopGlobal);
-    cudaEventSynchronize(stopGlobal);
+    cudaEventRecord(endGlobal);
+    cudaEventSynchronize(endGlobal);
 
     float globalElapsedTime = 0;
-    cudaEventElapsedTime(&globalElapsedTime, startGlobal, stopGlobal);
+    cudaEventElapsedTime(&globalElapsedTime, startGlobal, endGlobal);
 
     float localElapsedTime = 0;
-    cudaEventElapsedTime(&localElapsedTime, startLocal, stopLocal);
+    cudaEventElapsedTime(&localElapsedTime, startLocal, endLocal);
 
     printf("Native\n\tGlobal: %f ms\n\tLocal: %f ms\n", globalElapsedTime, localElapsedTime);
 
     cudaEventDestroy(startGlobal);
-    cudaEventDestroy(stopGlobal);
+    cudaEventDestroy(endGlobal);
     cudaEventDestroy(startLocal);
-    cudaEventDestroy(stopLocal);
+    cudaEventDestroy(endLocal);
 
     free(hostArr);
     free(hostArrRes);

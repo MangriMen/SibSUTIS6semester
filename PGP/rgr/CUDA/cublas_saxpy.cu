@@ -16,34 +16,33 @@ int main()
 
     cudaEventRecord(startGlobal);
 
-    const int num_elem = 1 << 20;
-    const size_t size_in_bytes = (num_elem * sizeof(float));
+    const int n = 1 << 24;
+    const size_t size_in_bytes = (n * sizeof(float));
 
-    float *A_dev;
+    float *A_dev = NULL;
     cudaMalloc((void **)&A_dev, size_in_bytes);
 
-    float *B_dev;
+    float *B_dev = NULL;
     cudaMalloc((void **)&B_dev, size_in_bytes);
 
-    float *A_h;
+    float *A_h = NULL;
     cudaMallocHost((void **)&A_h, size_in_bytes);
 
-    float *B_h;
+    float *B_h = NULL;
     cudaMallocHost((void **)&B_h, size_in_bytes);
 
     memset(A_h, 0, size_in_bytes);
     memset(B_h, 0, size_in_bytes);
 
-    // Инициализация библиотеки CUBLAS
     cublasHandle_t cublas_handle;
     cublasCreate(&cublas_handle);
 
-    for (int i = 0; i < num_elem; i++)
+    for (int i = 0; i < n; i++)
     {
         A_h[i] = (float)i;
     }
 
-    const int num_rows = num_elem;
+    const int num_rows = n;
     const int num_cols = 1;
     const size_t elem_size = sizeof(float);
 
@@ -60,7 +59,7 @@ int main()
     float alpha = 2.0F;
     cudaEventRecord(startLocal);
 
-    cublasSaxpy(cublas_handle, num_elem, &alpha, A_dev,
+    cublasSaxpy(cublas_handle, n, &alpha, A_dev,
                 stride, B_dev, stride);
 
     cudaEventRecord(endLocal);
@@ -101,5 +100,5 @@ int main()
 
     cudaDeviceReset();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
