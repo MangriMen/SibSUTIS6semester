@@ -11,13 +11,15 @@ public class LevelController : MonoBehaviour
 
     [SerializeField]
     private List<GameObject> modules = new List<GameObject>();
+    [SerializeField]
+    private List<GameObject> iceModules = new List<GameObject>();
 
     [SerializeField]
     private Transform despawnPoint;
 
     void Start()
     {
-        currentModules.Add(SpawnModule(modules.First(), transform));
+        currentModules.Add(SpawnModule(modules.First(), transform, transform.position));
     }
 
     void Update()
@@ -45,18 +47,22 @@ public class LevelController : MonoBehaviour
 
             if (end.transform.position.y <= despawnPoint.transform.position.y)
             {
-                currentModules.Add(SpawnModule(modules[Random.Range(0, modules.Count)], transform, start));
+                currentModules.Add(SpawnModule(modules[Random.Range(0, modules.Count)], transform, start.transform.position));
+                if (Random.Range(0, 100) > 40)
+                {
+                    SpawnModule(iceModules[Random.Range(0, iceModules.Count)], transform, new Vector3(Random.Range(-1f, 1.1f), 7.32f));
+                }
             }
         }
     }
 
-    private GameObject SpawnModule(GameObject prefab, Transform parent, Transform spawnPosition = null)
+    private GameObject SpawnModule(GameObject prefab, Transform parent, Vector3 spawnPosition)
     {
         GameObject newModule = Instantiate(prefab, parent);
         
         if (spawnPosition != null)
         {
-            newModule.transform.position = spawnPosition.transform.position;
+            newModule.transform.position = spawnPosition;
         }
         
         return newModule;

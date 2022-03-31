@@ -1463,6 +1463,11 @@ MonoBehaviour:
   modules:
   - {fileID: 2738075469653531594, guid: 80f74e70bc1949743819a307ea2454b2, type: 3}
   - {fileID: 2738075469653531594, guid: edb22d1a3a3f47f4da2e6f92ecbd410d, type: 3}
+  - {fileID: 2738075469653531594, guid: 8b192911e43a5334ab0bdbadde0d46af, type: 3}
+  - {fileID: 2738075469653531594, guid: eecae5183a947464391f9666b085244d, type: 3}
+  - {fileID: 2738075469653531594, guid: 9f47414757750354fb9899df42ebc588, type: 3}
+  iceModules:
+  - {fileID: 8630565310215694505, guid: 0f077efe9ecec864f9c653e4d4b14e97, type: 3}
   despawnPoint: {fileID: 618621371}
 --- !u!1 &1608121777
 GameObject:

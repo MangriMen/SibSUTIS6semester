@@ -70,7 +70,7 @@ public class PlayerController : MonoBehaviour
             }
             else if (col.gameObject.CompareTag("KillBox"))
             {
-                Destroy(gameObject, 0.8f);
+                Destroy(gameObject, 0.05f);
                 if (screenOfDead == null)
                 {
                     screenOfDead = Instantiate(screenOfDeadPrefab, cnv.transform);
