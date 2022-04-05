@@ -2,241 +2,219 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <stdio.h>
-#include <string>
-#include <stdlib.h>
-void initGL();
-int initBuffer();
-void display();
-void myCleanup();
-GLFWwindow *window;
-const unsigned int window_width = 512;
-const unsigned int window_height = 512;
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <chrono>
 
-GLuint genComputeProgram();
-void compute();
+using namespace std;
+
+constexpr unsigned int WINDOW_WIDTH = 512;
+constexpr unsigned int WINDOW_HEIGHT = 512;
+
+constexpr unsigned short OPENGL_MAJOR_VERSION = 4;
+constexpr unsigned short OPENGL_MINOR_VERSION = 3;
+
+GLfloat vertices[] =
+	{
+		-1.0f,
+		-1.0f,
+		0.0f,
+		0.0f,
+		0.0f,
+		-1.0f,
+		1.0f,
+		0.0f,
+		0.0f,
+		1.0f,
+		1.0f,
+		1.0f,
+		0.0f,
+		1.0f,
+		1.0f,
+		1.0f,
+		-1.0f,
+		0.0f,
+		1.0f,
+		0.0f,
+};
+
+GLuint indices[] =
+	{
+		0, 2, 1,
+		0, 3, 2};
+
+const char *screenVertexShaderSource = // Vertex Shader
+	R"(
+	#version 430 core
+	layout (location = 0) in vec3 pos;
+	layout (location = 1) in vec2 uvs;
+	out vec2 UVs;
+	void main()
+	{
+		gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);
+		UVs = uvs;
+	}
+)";
+const char *screenFragmentShaderSource = // Fragment Shader
+	R"(
+	#version 430 core
+	out vec4 FragColor;
+	uniform sampler2D screen;
+	in vec2 UVs;
+	void main()
+	{
+		FragColor = texture(screen, UVs);
+	}
+)";
+const char *saxpyComputeShaderSource = // Compute Shader
+	R"(
+	#version 430 core
+	layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+	layout(rgba32f, binding = 0) uniform image2D screen;
+	void main()
+	{
+		ivec2 dims = imageSize(screen);
+
+		uint i = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * dims.x;
+
+		float value = 2.0f * i + 0;
+
+		float fromEnd = dims.x * dims.y;
+		float toEnd = 1;
+
+		float grad = value / fromEnd * toEnd;
+
+		vec4 pixel = vec4(grad, grad, grad, 1.0);
+		ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+
+		imageStore(screen, pixel_coords, pixel);
+	}
+)";
 
 int main()
 {
-	initGL();
-	initBuffer();
+	chrono::steady_clock::time_point startGlobal, endGlobal, startLocal, endLocal;
 
-	compute();
+	startGlobal = chrono::high_resolution_clock::now();
 
-	do
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		display();
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	} while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
-
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
-	myCleanup();
-
-	glfwTerminate();
-	return 0;
-}
-
-void initGL()
-{
+	// Init
 	if (!glfwInit())
 	{
-		fprintf(stderr, "Failed to initialize GLFW\n");
-		getchar();
-		return;
+		cerr << "Failed to initialize GLFW"
+			 << "\n";
 	}
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE,
-				   GLFW_OPENGL_COMPAT_PROFILE);
-	window = glfwCreateWindow(window_width, window_height,
-							  "Template window", NULL, NULL);
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_MAJOR_VERSION);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_MINOR_VERSION);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+	GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Compute shader", NULL, NULL);
+
 	if (window == NULL)
 	{
-		fprintf(stderr, "Failed to open GLFW window. \n");
-		getchar();
+		cerr << "Failed to open GLFW window"
+			 << "\n";
 		glfwTerminate();
-		return;
 	}
+
 	glfwMakeContextCurrent(window);
-	// Initialize GLEW
+
 	glewExperimental = true;
 	if (glewInit() != GLEW_OK)
 	{
-		fprintf(stderr, "Failed to initialize GLEW\n");
-		getchar();
+		cerr << "Failed to initialize GLEW"
+			 << "\n";
 		glfwTerminate();
-		return;
 	}
-	return;
-}
 
-void checkErrors(std::string desc)
-{
-	GLenum e = glGetError();
-	if (e != GL_NO_ERROR)
-	{
-		fprintf(stderr, "OpenGL error in \"%s\": %s (%d)\n", desc.c_str(),
-				gluErrorString(e), e);
-		exit(20);
-	}
-}
+	// VAO, VBO, EBO
+	GLuint VAO, VBO, EBO;
+	glCreateVertexArrays(1, &VAO);
+	glCreateBuffers(1, &VBO);
+	glCreateBuffers(1, &EBO);
 
-GLuint bufferID;
-GLuint progHandle;
-GLuint genRenderProg();
-const int num_of_verticies = 3;
+	glNamedBufferData(VBO, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glNamedBufferData(EBO, sizeof(indices), indices, GL_STATIC_DRAW);
 
-int initBuffer()
-{
-	glGenBuffers(1, &bufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-	static const GLfloat vertex_buffer_data[] = {
-		-0.9f,
-		-0.9f,
-		-0.0f,
-		1.0f,
-		0.0f,
-		0.0f,
-		0.0f,
-		0.0f,
-		0.0f,
-		0.0f,
-		1.0f,
-		0.0f,
-		0.9f,
-		-0.5f,
-		0.0f,
-		0.0f,
-		0.0f,
-		1.0f,
-	};
+	glEnableVertexArrayAttrib(VAO, 0);
+	glVertexArrayAttribBinding(VAO, 0, 0);
+	glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
 
-	glBufferData(GL_ARRAY_BUFFER, 6 * num_of_verticies * sizeof(float),
-				 vertex_buffer_data, GL_STATIC_DRAW);
+	glEnableVertexArrayAttrib(VAO, 1);
+	glVertexArrayAttribBinding(VAO, 1, 0);
+	glVertexArrayAttribFormat(VAO, 1, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat));
 
-	return 0;
-}
+	glVertexArrayVertexBuffer(VAO, 0, VBO, 0, 5 * sizeof(GLfloat));
+	glVertexArrayElementBuffer(VAO, EBO);
 
-void display()
-{
-	progHandle = genRenderProg();
-	glUseProgram(progHandle);
+	// Texture
+	GLuint screenTex;
+	glCreateTextures(GL_TEXTURE_2D, 1, &screenTex);
+	glTextureParameteri(screenTex, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTextureParameteri(screenTex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTextureParameteri(screenTex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(screenTex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTextureStorage2D(screenTex, 1, GL_RGBA32F, WINDOW_WIDTH, WINDOW_HEIGHT);
+	glBindImageTexture(0, screenTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
-	GLint posPtr = glGetAttribLocation(progHandle, "pos");
-	glVertexAttribPointer(posPtr, 3, GL_FLOAT, GL_FALSE, 24, 0);
-	glEnableVertexAttribArray(posPtr);
-	GLint colorPtr = glGetAttribLocation(progHandle, "color");
-	glVertexAttribPointer(colorPtr, 3, GL_FLOAT, GL_FALSE, 24, (const GLvoid *)12);
-	glEnableVertexAttribArray(colorPtr);
+	// Shaders
+	GLuint screenVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(screenVertexShader, 1, &screenVertexShaderSource, NULL);
+	glCompileShader(screenVertexShader);
+	GLuint screenFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(screenFragmentShader, 1, &screenFragmentShaderSource, NULL);
+	glCompileShader(screenFragmentShader);
 
-	glDrawArrays(GL_TRIANGLES, 0, num_of_verticies);
+	GLuint screenShaderProgram = glCreateProgram();
+	glAttachShader(screenShaderProgram, screenVertexShader);
+	glAttachShader(screenShaderProgram, screenFragmentShader);
+	glLinkProgram(screenShaderProgram);
 
-	glDisableVertexAttribArray(posPtr);
-	glDisableVertexAttribArray(colorPtr);
-}
-
-void myCleanup()
-{
-	glDeleteBuffers(1, &bufferID);
-	glDeleteProgram(progHandle);
-}
-
-GLuint genRenderProg()
-{
-	GLuint progHandle = glCreateProgram();
-	GLuint vp = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fp = glCreateShader(GL_FRAGMENT_SHADER);
-	const char *vpSrc[] = {
-		"#version 430\n",
-		"layout(location = 0) in vec3 pos;\
-layout(location = 1) in vec3 color;\
-out vec4 vs_color;\
-void main() {\
- gl_Position = vec4(pos,1);\
- vs_color=vec4(color,1.0);\
-}"};
-	const char *fpSrc[] = {
-		"#version 430\n",
-		"in vec4 vs_color;\
- out vec4 fcolor;\
- void main() {\
-fcolor = vs_color;\
-}"};
-	glShaderSource(vp, 2, vpSrc, NULL);
-	glShaderSource(fp, 2, fpSrc, NULL);
-	glCompileShader(vp);
-
-	int rvalue;
-	glGetShaderiv(vp, GL_COMPILE_STATUS, &rvalue);
-	if (!rvalue)
-	{
-		fprintf(stderr, "Error in compiling vp\n");
-		exit(30);
-	}
-	glAttachShader(progHandle, vp);
-
-	glCompileShader(fp);
-	glGetShaderiv(fp, GL_COMPILE_STATUS, &rvalue);
-	if (!rvalue)
-	{
-		fprintf(stderr, "Error in compiling fp\n");
-		exit(31);
-	}
-	glAttachShader(progHandle, fp);
-	glLinkProgram(progHandle);
-	glGetProgramiv(progHandle, GL_LINK_STATUS, &rvalue);
-	if (!rvalue)
-	{
-		fprintf(stderr, "Error in linking sp\n");
-		exit(32);
-	}
-	checkErrors("Render shaders");
-	return progHandle;
-}
-
-GLuint genComputeProgram()
-{
-	int status = 0;
-	GLuint computeProgram = glCreateProgram();
-
-	const char *saxpyComputeShader[] = {
-		"#version 430\n",
-		""};
+	glDeleteShader(screenVertexShader);
+	glDeleteShader(screenFragmentShader);
 
 	GLuint computeShader = glCreateShader(GL_COMPUTE_SHADER);
-	glShaderSource(computeShader, 2, saxpyComputeShader, NULL);
+	glShaderSource(computeShader, 1, &saxpyComputeShaderSource, NULL);
 	glCompileShader(computeShader);
-	glGetShaderiv(computeShader, GL_COMPILE_STATUS, &status);
-	if (!status)
-	{
-		fprintf(stderr, "Error in compiling computeShader\n");
-		exit(30);
-	}
+
+	GLuint computeProgram = glCreateProgram();
 	glAttachShader(computeProgram, computeShader);
-
 	glLinkProgram(computeProgram);
-	glGetProgramiv(computeProgram, GL_LINK_STATUS, &status);
-	if (!status)
-	{
-		fprintf(stderr, "Error in linking computeProgram\n");
-		exit(32);
-	}
-	checkErrors("Render shaders");
 
-	return computeProgram;
-}
+	glDeleteShader(computeShader);
 
-void compute()
-{
-	GLuint computeProgram = genComputeProgram();
-
+	// do
+	//{
+	//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//
 	glUseProgram(computeProgram);
-	glDispatchCompute(1, 1, 1);
+	startLocal = chrono::high_resolution_clock::now();
+	glDispatchCompute(1 << 24, 1, 1);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	endLocal = chrono::high_resolution_clock::now();
 
-	glDeleteProgram(computeProgram);
+	// glUseProgram(screenShaderProgram);
+	// glBindTextureUnit(0, screenTex);
+	// glUniform1i(glGetUniformLocation(screenShaderProgram, "screen"), 0);
+	// glBindVertexArray(VAO);
+	// glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(indices[0]), GL_UNSIGNED_INT, 0);
+
+	//	glfwSwapBuffers(window);
+	//	glfwPollEvents();
+	//} while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
+
+	endGlobal = chrono::high_resolution_clock::now();
+
+	long long globalElapsedTime = chrono::duration_cast<chrono::milliseconds>(endGlobal - startGlobal).count();
+
+	long long localElapsedTime = chrono::duration_cast<chrono::microseconds>(endLocal - startLocal).count();
+
+	printf("OpenGL\n\tGlobal: %lld ms\n\tLocal: %f ms\n", globalElapsedTime, localElapsedTime / (double)1000);
+
+	return EXIT_SUCCESS;
 }
