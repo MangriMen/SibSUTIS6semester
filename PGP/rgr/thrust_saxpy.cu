@@ -3,6 +3,9 @@
 #include <thrust/transform.h>
 #include <thrust/fill.h>
 #include <thrust/sequence.h>
+#include <fstream>
+
+using namespace std;
 
 struct saxpy_functor
 {
@@ -63,6 +66,10 @@ int main()
     cudaEventElapsedTime(&localElapsedTime, startLocal, endLocal);
 
     printf("Thrust\n\tGlobal: %f ms\n\tLocal: %f ms\n", globalElapsedTime, localElapsedTime);
+
+    ofstream fileOut("result.csv", ios::app);
+    fileOut << "thrust;" << globalElapsedTime << ";" << localElapsedTime << "\n";
+    fileOut.close();
 
     cudaEventDestroy(startGlobal);
     cudaEventDestroy(endGlobal);

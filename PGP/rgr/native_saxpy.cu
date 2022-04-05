@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+
+using namespace std;
 
 __global__ void saxpy(int n, float a, float *__restrict x, float *__restrict y)
 {
@@ -26,10 +29,10 @@ int main()
     float *hostArrRes = (float *)malloc(n * sizeof(float));
 
     float *cudaArr = NULL;
-    cudaMalloc((void **)&cudaArr, (n) * sizeof(float));
+    cudaMalloc((void **)&cudaArr, (n + 1) * sizeof(float));
 
     float *cudaArrRes = NULL;
-    cudaMalloc((void **)&cudaArrRes, (n) * sizeof(float));
+    cudaMalloc((void **)&cudaArrRes, (n + 1) * sizeof(float));
 
     for (int i = 0; i < n; i++)
     {
@@ -56,15 +59,19 @@ int main()
 
     printf("Native\n\tGlobal: %f ms\n\tLocal: %f ms\n", globalElapsedTime, localElapsedTime);
 
+    ofstream fileOut("result.csv", ios::app);
+    fileOut << "native;" << globalElapsedTime << ";" << localElapsedTime << "\n";
+    fileOut.close();
+
     cudaEventDestroy(startGlobal);
     cudaEventDestroy(endGlobal);
     cudaEventDestroy(startLocal);
     cudaEventDestroy(endLocal);
 
-    free(hostArr);
-    free(hostArrRes);
-    free(cudaArr);
-    free(cudaArrRes);
+    //free(hostArr);
+    //free(hostArrRes);
+    //free(cudaArr);
+    //free(cudaArrRes);
 
     return EXIT_SUCCESS;
 }

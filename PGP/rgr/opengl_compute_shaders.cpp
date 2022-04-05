@@ -80,15 +80,15 @@ const char *saxpyComputeShaderSource = // Compute Shader
 
 		float value = 2.0f * i + 0;
 
-		float fromEnd = dims.x * dims.y;
-		float toEnd = 1;
+		//float fromEnd = dims.x * dims.y;
+		//float toEnd = 1;
 
-		float grad = value / fromEnd * toEnd;
+		//float grad = value / fromEnd * toEnd;
 
-		vec4 pixel = vec4(grad, grad, grad, 1.0);
-		ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+		//vec4 pixel = vec4(grad, grad, grad, 1.0);
+		//ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
 
-		imageStore(screen, pixel_coords, pixel);
+		//imageStore(screen, pixel_coords, pixel);
 	}
 )";
 
@@ -188,18 +188,18 @@ int main()
 	// do
 	//{
 	//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//
+
 	glUseProgram(computeProgram);
 	startLocal = chrono::high_resolution_clock::now();
 	glDispatchCompute(1 << 24, 1, 1);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	endLocal = chrono::high_resolution_clock::now();
 
-	// glUseProgram(screenShaderProgram);
-	// glBindTextureUnit(0, screenTex);
-	// glUniform1i(glGetUniformLocation(screenShaderProgram, "screen"), 0);
-	// glBindVertexArray(VAO);
-	// glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(indices[0]), GL_UNSIGNED_INT, 0);
+	//	glUseProgram(screenShaderProgram);
+	//	glBindTextureUnit(0, screenTex);
+	//	glUniform1i(glGetUniformLocation(screenShaderProgram, "screen"), 0);
+	//	glBindVertexArray(VAO);
+	//	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(indices[0]), GL_UNSIGNED_INT, 0);
 
 	//	glfwSwapBuffers(window);
 	//	glfwPollEvents();
@@ -215,6 +215,10 @@ int main()
 	long long localElapsedTime = chrono::duration_cast<chrono::microseconds>(endLocal - startLocal).count();
 
 	printf("OpenGL\n\tGlobal: %lld ms\n\tLocal: %f ms\n", globalElapsedTime, localElapsedTime / (double)1000);
+
+	ofstream fileOut("result.csv", ios::app);
+	fileOut << "opengl;" << globalElapsedTime << ";" << localElapsedTime / (double)1000 << "\n";
+	fileOut.close();
 
 	return EXIT_SUCCESS;
 }

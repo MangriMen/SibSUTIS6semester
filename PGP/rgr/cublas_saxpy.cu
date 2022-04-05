@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cublas_v2.h>
+#include <fstream>
+
+using namespace std;
 
 int main()
 {
@@ -92,6 +95,10 @@ int main()
     cudaEventElapsedTime(&localElapsedTime, startLocal, endLocal);
 
     printf("CUBLAS\n\tGlobal: %f ms\n\tLocal: %f ms\n", globalElapsedTime, localElapsedTime);
+
+    ofstream fileOut("result.csv", ios::app);
+    fileOut << "cublas;" << globalElapsedTime << ";" << localElapsedTime << "\n";
+    fileOut.close();
 
     cudaEventDestroy(startGlobal);
     cudaEventDestroy(endGlobal);
