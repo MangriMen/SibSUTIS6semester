@@ -1,79 +1,89 @@
 import sys
+import copy
 
 
-def getMin(a, r, ex1, ex2):
-    min = stl = str = sys.maxsize
-    for i in range(0, ex1):
-        for j in range(0, ex2):
-            if a[i][j] < min or min == sys.maxsize:
-                if i in r['str'] or j in r['stl']:
+def getMin(matrix, r, line_count, column_count):
+    min_element = stl_index = str_index = sys.maxsize
+
+    for i in range(0, line_count):
+        for j in range(0, column_count):
+            if matrix[i][j] < min_element or min_element == sys.maxsize:
+                if i in r['str_index'] or j in r['stl_index']:
                     continue
-                min = a[i][j]
-                str = i
-                stl = j
-    return str, stl
+                min_element = matrix[i][j]
+                str_index = i
+                stl_index = j
+
+    return str_index, stl_index
 
 
-def findMin(a, i, j, ex1, ex2, t):
-    min = stl = str = sys.maxsize
-    for k in range(0, ex2):
-        if min > a[i][k] and not(k in t['stl']):
-            min = a[i][k]
-            stl = k
-            str = i
+def findMin(matrix, i, j, line_count, column_count, t):
+    min_element = stl_index = str_index = sys.maxsize
 
-    for k in range(0, ex1):
-        if min > a[k][j] and not(k in t['str']):
-            min = a[k][j]
-            stl = j
-            str = k
+    for k in range(0, column_count):
+        if min_element > matrix[i][k] and not(k in t['stl_index']):
+            min_element = matrix[i][k]
+            stl_index = k
+            str_index = i
 
-    return str, stl
+    for k in range(0, line_count):
+        if min_element > matrix[k][j] and not(k in t['str_index']):
+            min_element = matrix[k][j]
+            stl_index = j
+            str_index = k
+
+    return str_index, stl_index
 
 
-def func(a, provider_info, consumer_info, extra1, extra2):
-    t = {'str': [], 'stl': []}
+def solver(transport_matrix, reserves, needs, line_count, column_count):
+    t = {'str_index': [], 'stl_index': []}
     r = []
-    for i in range(0, len(a)):
+
+    for i in range(0, len(transport_matrix)):
         r.append([])
-        for j in range(0, len(a[i])):
+        for j in range(0, len(transport_matrix[i])):
             r[i].append(-1)
 
-    for p in range(0, extra1*extra2):
-        i, j = getMin(a, t, extra1, extra2)
+    for p in range(0, line_count*column_count):
+        i, j = getMin(transport_matrix, t, line_count, column_count)
+
         try:
-            info = (provider_info[i], consumer_info[j])
+            info = (reserves[i], needs[j])
         except:
             return r
+
         if info[0] > info[1]:
             r[i][j] = info[1]
-            provider_info[i] -= info[1]
-            t['stl'].append(j)
+            reserves[i] -= info[1]
+            t['stl_index'].append(j)
         elif info[0] < info[1]:
             r[i][j] = info[0]
-            consumer_info[j] -= info[0]
-            t['str'].append(i)
+            needs[j] -= info[0]
+            t['str_index'].append(i)
         else:
             r[i][j] = info[1]
-            consumer_info[j] -= info[0]
-            provider_info[i] -= info[1]
-            t['stl'].append(j)
-            t['str'].append(i)
-            i1, j1 = findMin(a, i, j, extra1, extra2, t)
-            #print(f"{i1} {j1}")
+            needs[j] -= info[0]
+            reserves[i] -= info[1]
+            t['stl_index'].append(j)
+            t['str_index'].append(i)
+            i1, j1 = findMin(transport_matrix, i, j,
+                             line_count, column_count, t)
             try:
                 r[i1][j1] = 0
             except:
                 return r
+
     return r
 
 
-def countCost(a, b):
+def countCost(matrix, transport_matrix):
     tmp_result = 0
-    for i in range(0, len(a)):
-        for j in range(0, len(a[i])):
-            if a[i][j] != -1:
-                tmp_result += a[i][j]*b[i][j]
+
+    for i in range(0, len(matrix)):
+        for j in range(0, len(matrix[i])):
+            if matrix[i][j] != -1:
+                tmp_result += matrix[i][j]*transport_matrix[i][j]
+
     return tmp_result
 
 
@@ -81,88 +91,91 @@ def main():
     file = open('test.txt', 'r')
 
     line = file.readline()
-    provider_info = [int(item) for item in line.split(" ")]
+    reserves = [int(item) for item in line.split(" ")]
 
     line = file.readline()
-    consumer_info = [int(item) for item in line.split(" ")]
-    extraconsumerinfo = [int(item) for item in consumer_info]
+    init_needs = [int(item) for item in line.split(" ")]
+    needs = copy.deepcopy(init_needs)
 
     lines = file.readlines()
-    b = []
+
+    transport_matrix = []
+
     for line in lines:
-        b.append([int(item) for item in line.split(" ")])
+        transport_matrix.append([int(item) for item in line.split(" ")])
 
-    providersum = consumersum = 0
-    for item in provider_info:
-        providersum += item
+    reserves_sum = needs_sum = 0
 
-    for item in consumer_info:
-        consumersum += item
+    for item in reserves:
+        reserves_sum += item
 
-    extraprovider = False
-    if consumersum > providersum:
-        extraprovider = True
-        print("Need another provider\n")
-        provider_info.append(abs(consumersum - providersum))
+    for item in init_needs:
+        needs_sum += item
+
+    extra_provider = False
+
+    if needs_sum > reserves_sum:
+        extra_provider = True
+        print("Additional provider is needed\n")
+        reserves.append(abs(needs_sum - reserves_sum))
         tmpm = []
-        for i in range(0, len(b[0])):
+        for i in range(0, len(transport_matrix[0])):
             tmpm.append(0)
-        b.append(tmpm)
+        transport_matrix.append(tmpm)
 
-    extraconsumer = False
-    if consumersum < providersum:
-        extraconsumer = True
-        print("Need another consumer\n")
-        provider_info.append(abs(consumersum - providersum))
+    extra_consumer = False
+
+    if needs_sum < reserves_sum:
+        extra_consumer = True
+        print("Additional consumer is needed\n")
+        reserves.append(abs(needs_sum - reserves_sum))
 
     print("Provider info")
-    for item in provider_info:
+    for item in reserves:
         print(item, end=' ')
     print("\n")
 
     print("Consumer info")
-    for item in consumer_info:
+    for item in init_needs:
         print(item, end=' ')
     print("\n")
 
     print("Transport cost")
-    for row in b:
+    for row in transport_matrix:
         for item in row:
             print('{0:5}'.format(item), end=' ')
-        print()
+        print(end="\n")
 
-    if extraprovider:
-        strcnt = len(b) - 1
-    else:
-        strcnt = len(b)
+    line_count = len(transport_matrix) - int(extra_provider)
+    column_count = len(transport_matrix[0]) - int(extra_consumer)
 
-    if extraconsumer:
-        clmcnt = len(b[0]) - 1
-    else:
-        clmcnt = len(b[0])
+    result_matrix = solver(transport_matrix, reserves,
+                           init_needs, line_count, column_count)
 
-    r = func(b, provider_info, consumer_info, strcnt, clmcnt)
-    el = 0
-    for i in range(0, len(r[0])):
-        tmpsum = 0
-        for j in range(0, len(r)):
-            if r[j][i] != -1:
-                tmpsum += r[j][i]
-        if extraconsumerinfo[i] != tmpsum:
-            r[len(r)-1][i] = extraconsumerinfo[i] - tmpsum
+    element_count = 0
+    for i in range(0, len(result_matrix[0])):
+        temp_sum = 0
 
-    for i in range(0, len(r[0])):
-        for j in range(0, len(r)):
-            if r[j][i] != -1:
-                el += 1
+        for j in range(0, len(result_matrix)):
+            if result_matrix[j][i] != -1:
+                temp_sum += result_matrix[j][i]
+
+        if needs[i] != temp_sum:
+            result_matrix[len(result_matrix) - 1][i] = needs[i] - temp_sum
+
+    for i in range(0, len(result_matrix[0])):
+        for j in range(0, len(result_matrix)):
+            if result_matrix[j][i] != -1:
+                element_count += 1
 
     print("\nTraffic distribution")
-    for row in r:
+    for row in result_matrix:
         for item in row:
             print('{0:5}'.format(item), end=' ')
-        print()
-    print(f"{len(r)} + {len(r[0])} - 1 == {el}")
-    print(f"Cost is {countCost(r,b)}")
+        print(end='\n')
+    print(
+        f"{len(result_matrix)} + {len(result_matrix[0])} - 1 == {element_count}")
+    print(f"Cost is {countCost(result_matrix, transport_matrix)}")
 
 
 if __name__ == "__main__":
