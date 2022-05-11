@@ -18,7 +18,7 @@ def getBasisIndexFromRow(matrix: list, excluded: list, row: int) -> int:
 
     for ind in index:
         isBasis = True
-        for i in range(0, len(matrix)):
+        for i, _ in enumerate(matrix):
             if i != row:
                 if matrix[i][ind] != 0:
                     isBasis = False
@@ -66,7 +66,7 @@ def createHeaderRow(matrix, excluded, cell_width):
 def createTableRows(matrix, solution, excluded, cell_width, column_count):
     rows = ""
 
-    for i in range(0, len(matrix)):
+    for i, _ in enumerate(matrix):
         rows += createCell(getXFromIndex(
             getBasisIndexFromRow(matrix, excluded, i)), cell_width, True)
         rows += createCell(solution[i], cell_width)
@@ -99,7 +99,7 @@ def getCellWidth(matrix, solution, functionZ, functionM, excluded=[]):
     if functionM:
         width = max(width, len(str(max(functionM, key=lambda x: len(str(x))))))
 
-    for i in range(0, len(matrix)):
+    for i, _ in enumerate(matrix):
         for j in range(0, len(matrix[i])):
             if j not in excluded:
                 width = max(width, len(str(matrix[i][j])))
@@ -138,7 +138,7 @@ class DualSimplexMethod:
 
         print(createFunctionRow(self.functionZ, self.excluded, cell_width, "Z"))
 
-        if self.function_m and len([x for i, x in enumerate(self.function_m) if x != 0 and i not in self.excluded]):
+        if self.function_m and [x for i, x in enumerate(self.function_m) if x != 0 and i not in self.excluded]:
             if not isCompact:
                 print(createLineSplitter(cell_width, column_count))
             print(createFunctionRow(self.function_m,
@@ -224,7 +224,7 @@ class DualSimplexMethod:
     def findSO(self, j):
         so = Fraction(999, 1)
         i = -1
-        for k in range(0, len(self.matrix)):
+        for k, _ in enumerate(self.matrix):
             if self.matrix[k][j] > Fraction(0, 1):
                 if self.free_members[k]/self.matrix[k][j] < so:
                     so = self.free_members[k]/self.matrix[k][j]
@@ -245,7 +245,7 @@ class DualSimplexMethod:
             self.matrix[i][k] /= element
         self.free_members[i] /= element
 
-        for c in range(0, len(self.matrix)):
+        for c, _ in enumerate(self.matrix):
             if c != i:
                 newel = self.matrix[c][j]
                 for k in range(0, len(self.matrix[0])):
@@ -297,10 +297,7 @@ class DualSimplexMethod:
                 self.makesolution(self.basis)
                 print(f"X = {self.solutions[len(self.solutions)-1]}")
             else:
-                if self.checkM() == True:
-                    return True
-                else:
-                    return False
+                return self.checkM()
 
     def findNegativeZ(self, array):
         j = -1
@@ -374,7 +371,7 @@ class DualSimplexMethod:
                     sol.append(
                         Fraction(-1, 1)*self.solutions[len(self.solutions)-2][i] + self.solutions[len(self.solutions)-1][i])
                 print("Solution = [", end="")
-                for i in range(0, len(sol)):
+                for i, _ in enumerate(sol):
                     if sol[i] > Fraction(0, 1):
                         print(
                             f"{self.solutions[len(self.solutions)-2][i]} + {sol[i]}λ", end="")
