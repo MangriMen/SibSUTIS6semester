@@ -199,21 +199,23 @@ class DualSimplexMethod:
         self.__printSimplexTable("Complement to the basis")
         self.__printSolution()
 
-    @ staticmethod
-    def __negativeExist(array):
-        return bool([item for item in array[:-1] if item < Fraction(0, 1)])
-
-    @ staticmethod
-    def __findNegative(array):
+    def __findNegative(self, array, isCutRange=False):
         j = -1
         element = Fraction(1, 1)
-        for i in range(0, len(array)-1):
+        for i in range(0, len(array) - (len(self.matrix) if isCutRange else 0) - 1):
             if array[i] < Fraction(0, 1):
                 if array[i] < element:
                     element = array[i]
                     j = i
 
         return j
+
+    def __negativeExist(self, array, isCutRange=False):
+        for i in range(0, len(array) - (len(self.matrix) if isCutRange else 0) - 1):
+            if array[i] < Fraction(0, 1):
+                return True
+
+        return False
 
     def __findSO(self, j):
         so = Fraction(999, 1)
@@ -289,19 +291,23 @@ class DualSimplexMethod:
 
         return pj
 
-    def __step(self, i, j):
-        self.__changeBasis(i, j)
+    def __changeBasis(self, i, j, toExclude=False):
+        bas = self.__findprevious(i)
+
+        if toExclude:
+            self.excluded.append(bas[1])
+
+        self.basis.remove(bas)
+        self.basis.append((i, j))
+        self.basis.sort()
+
+    def __step(self, i, j, isExcludeBasis=False):
+        self.__changeBasis(i, j, isExcludeBasis)
         self.__jordan((i, j))
         self.__makesolution(self.basis)
 
         self.__printSimplexTable()
         self.__printSolution()
-
-    def __changeBasis(self, i, j):
-        bas = self.__findprevious(i)
-        self.basis.remove(bas)
-        self.basis.append((i, j))
-        self.basis.sort()
 
     def __solveByM(self):
         while True:
@@ -309,24 +315,42 @@ class DualSimplexMethod:
                 j = self.__findNegative(self.function_m)
                 i = self.__findSO(j)
 
-                self.__step(i, j)
+                self.__step(i, j, True)
             else:
                 return self.__checkM()
 
     def __solveByZ(self):
         while True:
-            if self.__negativeExist(self.functionZ):
-                j = self.__findNegative(self.functionZ)
+            if self.__negativeExist(self.functionZ, True):
+                j = self.__findNegative(self.functionZ, True)
                 i = self.__findSO(j)
 
-                self.__step(i, j)
+                bas = self.__findprevious(i)
+                self.basis.remove(bas)
+                self.basis.append((i, j))
+                self.basis.sort()
+                self.__jordan((i, j))
+
+                self.__printSimplexTable()
+
+                self.__makesolution(self.basis)
+                self.__printSolution()
             else:
                 if (j := self.__doubleCheck()) == -1:
-                    print(f"Z = {self.functionZ[:-1]}")
+                    print(f"Z = {self.functionZ[-1]}")
                     break
                 i = self.__findSO(j)
 
-                self.__step(i, j)
+                bas = self.__findprevious(i)
+                self.basis.remove(bas)
+                self.basis.append((i, j))
+                self.basis.sort()
+                self.__jordan((i, j))
+
+                self.__printSimplexTable()
+
+                self.__makesolution(self.basis)
+                print(f"X = {self.solutions[len(self.solutions)-1]}")
 
                 sol = []
                 for i in range(0, len(self.solutions[0])):
