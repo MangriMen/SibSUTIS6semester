@@ -151,6 +151,7 @@ class DualSimplexMethod:
 
         self.functionZ = [Fraction(int(x) * -1)
                           for x in function_line.split(" ")]
+        self.functionZ[-1] *= -1
         self.free_members = [Fraction(int(x)) for x in b_line.split(" ")]
         self.matrix = [[Fraction(int(x)) for x in matrix_line.split(" ")]
                        for matrix_line in matrix_lines]
@@ -379,7 +380,8 @@ class DualSimplexMethod:
 
 
 def main() -> None:
-    DualSimplexMethodSolver = DualSimplexMethod("data.txt")
+    DualSimplexMethodSolver = DualSimplexMethod(
+        input("Enter filename: ") or "data.txt")
     DualSimplexMethodSolver.solve()
 
 
