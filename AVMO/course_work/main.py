@@ -311,6 +311,7 @@ class DualSimplexMethod:
         self.__printSolution()
 
     def __solveByM(self):
+        print("\n---Solve by function M---\n")
         while True:
             if self.__negativeExist(self.function_m):
                 j = self.__findNegative(self.function_m)
@@ -321,6 +322,7 @@ class DualSimplexMethod:
                 return self.__checkM()
 
     def __solveByZ(self):
+        print("\n---Solve by function Z---\n")
         while True:
             if self.__negativeExist(self.functionZ, True):
                 j = self.__findNegative(self.functionZ, True)
@@ -381,7 +383,7 @@ class DualSimplexMethod:
 
 def main() -> None:
     DualSimplexMethodSolver = DualSimplexMethod(
-        input("Enter filename: ") or "data.txt")
+        input("Enter filename(default \"data.txt\"): ") or "data.txt")
     DualSimplexMethodSolver.solve()
 
 
