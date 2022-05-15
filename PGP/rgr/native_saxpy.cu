@@ -68,10 +68,10 @@ int main()
     cudaEventDestroy(startLocal);
     cudaEventDestroy(endLocal);
 
-    //free(hostArr);
-    //free(hostArrRes);
-    //free(cudaArr);
-    //free(cudaArrRes);
+    free(hostArr);
+    free(hostArrRes);
+    free(cudaArr);
+    free(cudaArrRes);
 
     return EXIT_SUCCESS;
 }
