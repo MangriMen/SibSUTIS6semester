@@ -31,6 +31,9 @@ class Fraction:
 
         return ""
 
+    def __abs__(self):
+        return self * Fraction(-1, 1)
+
     def __add__(self, other):
         temp = Fraction()
         temp.numerator = self.numerator * other.denominator \

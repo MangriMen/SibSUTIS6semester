@@ -103,7 +103,7 @@ def getCellWidth(matrix, solution, functionZ, functionM, excluded=[]):
 class DualSimplexMethod:
     def __init__(self, filename="") -> None:
         self.matrix = []
-        self.functionZ = []
+        self.function_z = []
         self.function_m = []
         self.free_members = []
 
@@ -119,7 +119,7 @@ class DualSimplexMethod:
             print(f" {title}")
 
         cell_width = max(5, getCellWidth(
-            self.matrix, self.free_members, self.functionZ, self.function_m, self.excluded)) + 1
+            self.matrix, self.free_members, self.function_z, self.function_m, self.excluded)) + 1
         column_count = len(self.matrix[0]) + 2 - len(self.excluded)
 
         print(createLineSplitter(cell_width, column_count, "top"))
@@ -129,16 +129,15 @@ class DualSimplexMethod:
         print(createTableRows(self.matrix, self.free_members, self.excluded,
                               cell_width, column_count), end='')
 
-        print(createFunctionRow(self.functionZ, self.excluded, cell_width, "Z"))
+        print(createFunctionRow(self.function_z, self.excluded, cell_width, "Z"))
 
         if self.function_m and [x for i, x in enumerate(self.function_m) if x != 0 and i not in self.excluded]:
             if not isCompact:
                 print(createLineSplitter(cell_width, column_count))
             print(createFunctionRow(self.function_m,
                   self.excluded, cell_width, "M"))
-            print(createLineSplitter(cell_width, column_count, "bottom"))
-        else:
-            print(createLineSplitter(cell_width, column_count, "bottom"))
+
+        print(createLineSplitter(cell_width, column_count, "bottom"))
 
     def __printSolution(self):
         print(f"X = {self.solutions[-1]}")
@@ -149,9 +148,9 @@ class DualSimplexMethod:
             b_line = fileIn.readline()
             matrix_lines = fileIn.readlines()
 
-        self.functionZ = [Fraction(int(x) * -1)
-                          for x in function_line.split(" ")]
-        self.functionZ[-1] *= -1
+        self.function_z = [Fraction(int(x) * -1)
+                           for x in function_line.split(" ")]
+        self.function_z[-1] *= -1
         self.free_members = [Fraction(int(x)) for x in b_line.split(" ")]
         self.matrix = [[Fraction(int(x)) for x in matrix_line.split(" ")]
                        for matrix_line in matrix_lines]
@@ -159,38 +158,30 @@ class DualSimplexMethod:
     def __complementToTheBasis(self):
         N = len(self.matrix)
         M = len(self.matrix[0])
+
         for i in range(0, N):
             for j in range(0, N):
                 self.matrix[i] += [Fraction(0, 1)]
             self.matrix[i][M+i] = Fraction(1, 1)
 
-        for i in range(0, len(self.matrix[0])-N):
-            self.solution.append(Fraction(0, 1))
+        self.solution = [Fraction(0, 1)
+                         for _ in range(len(self.matrix[0]) - N)]
         self.solutions.append(self.solution)
 
-        for i in range(0, N):
-            self.basis.append((i, M+i))
-
-        tmp = self.functionZ[len(self.functionZ)-1]
-        self.functionZ[len(self.functionZ)-1] = Fraction(0, 1)
-        for i in range(0, N):
-            self.functionZ += [Fraction(0, 1)]
-
-        self.functionZ[len(self.functionZ)-1] = tmp
+        self.basis = [(i, M + i) for i in range(N)]
+        self.function_z = [*self.function_z[:-1], *
+                           [Fraction(0, 1) for _ in range(N)], self.function_z[-1]]
 
         for j in range(0, M):
             tmp = Fraction(0, 1)
             for i in range(0, N):
                 tmp += self.matrix[i][j]
-            self.function_m.append(tmp*Fraction(-1, 1))
+            self.function_m.append(tmp * Fraction(-1, 1))
 
-        for i in range(0, N):
-            self.function_m.append(Fraction(0, 1))
+        self.function_m.extend([Fraction(0, 1) for _ in range(N)])
 
-        tmp = Fraction(0, 1)
-        for i in range(0, N):
-            tmp += self.free_members[i]
-        self.function_m.append(tmp*Fraction(-1, 1))
+        self.function_m.append(
+            sum(self.free_members, Fraction(0, 0)) * Fraction(-1, 1))
 
     def loadFromFile(self, filename):
         self.__readFromFile(filename)
@@ -218,13 +209,13 @@ class DualSimplexMethod:
 
         return False
 
-    def __findSO(self, j):
-        so = Fraction(999, 1)
+    def __findSR(self, j):
+        sr = Fraction(999, 1)
         i = -1
         for k, _ in enumerate(self.matrix):
             if self.matrix[k][j] > Fraction(0, 1):
-                if self.free_members[k]/self.matrix[k][j] < so:
-                    so = self.free_members[k]/self.matrix[k][j]
+                if (calcSR := self.free_members[k]/self.matrix[k][j]) < sr:
+                    sr = calcSR
                     i = k
 
         return i
@@ -249,10 +240,10 @@ class DualSimplexMethod:
                     self.matrix[c][k] -= self.matrix[i][k]*newel
                 self.free_members[c] -= self.free_members[i]*newel
 
-        newel = self.functionZ[j]
-        for c in range(0, len(self.functionZ)-1):
-            self.functionZ[c] -= self.matrix[i][c] * newel
-        self.functionZ[len(self.functionZ)-1] -= self.free_members[i]*newel
+        newel = self.function_z[j]
+        for c in range(0, len(self.function_z)-1):
+            self.function_z[c] -= self.matrix[i][c] * newel
+        self.function_z[len(self.function_z)-1] -= self.free_members[i]*newel
 
         newel = self.function_m[j]
         for c in range(0, len(self.function_m)-1):
@@ -286,11 +277,26 @@ class DualSimplexMethod:
 
     def __doubleCheck(self):
         pj = -1
-        for i in range(0, len(self.functionZ)-len(self.matrix)-1):
-            if self.functionZ[i] == Fraction(0, 1) and not(self.__included(i)):
+        for i in range(0, len(self.function_z)-len(self.matrix)-1):
+            if self.function_z[i] == Fraction(0, 1) and not(self.__included(i)):
                 pj = i
 
         return pj
+
+    def __printZSolution(self):
+        print(f"Z = {self.function_z[-1]}")
+
+    def __printMultipleSolutions(self):
+        sol = [(Fraction(-1, 1) * self.solutions[-2][i]) + self.solutions[-1][i]
+               for i, _ in enumerate(self.solutions[0])]
+
+        print("Solution = [", end="")
+        for i, _ in enumerate(sol):
+            print(
+                f"{self.solutions[-2][i]} {'+' if sol[i] > Fraction(0, 1) else '-'} {abs(sol[i])}λ", end="")
+            if i < len(sol) - 1:
+                print("; ", end="")
+        print("]")
 
     def __changeBasis(self, i, j, toExclude=False):
         bas = self.__findprevious(i)
@@ -315,7 +321,7 @@ class DualSimplexMethod:
         while True:
             if self.__negativeExist(self.function_m):
                 j = self.__findNegative(self.function_m)
-                i = self.__findSO(j)
+                i = self.__findSR(j)
 
                 self.__step(i, j, True)
             else:
@@ -324,54 +330,21 @@ class DualSimplexMethod:
     def __solveByZ(self):
         print("\n---Solve by function Z---\n")
         while True:
-            if self.__negativeExist(self.functionZ, True):
-                j = self.__findNegative(self.functionZ, True)
-                i = self.__findSO(j)
+            if self.__negativeExist(self.function_z, True):
+                j = self.__findNegative(self.function_z, True)
+                i = self.__findSR(j)
 
-                bas = self.__findprevious(i)
-                self.basis.remove(bas)
-                self.basis.append((i, j))
-                self.basis.sort()
-                self.__jordan((i, j))
-
-                self.__printSimplexTable()
-
-                self.__makesolution(self.basis)
-                self.__printSolution()
+                self.__step(i, j, False)
             else:
                 if (j := self.__doubleCheck()) == -1:
-                    print(f"Z = {self.functionZ[-1]}")
+                    self.__printZSolution()
                     break
-                i = self.__findSO(j)
+                i = self.__findSR(j)
 
-                bas = self.__findprevious(i)
-                self.basis.remove(bas)
-                self.basis.append((i, j))
-                self.basis.sort()
-                self.__jordan((i, j))
+                self.__step(i, j, False)
 
-                self.__printSimplexTable()
-
-                self.__makesolution(self.basis)
-                print(f"X = {self.solutions[len(self.solutions)-1]}")
-
-                sol = []
-                for i in range(0, len(self.solutions[0])):
-                    sol.append(Fraction(-1, 1) * self.solutions[len(
-                        self.solutions)-2][i] + self.solutions[len(self.solutions)-1][i])
-
-                print("Solution = [", end="")
-                for i, _ in enumerate(sol):
-                    if sol[i] > Fraction(0, 1):
-                        print(
-                            f"{self.solutions[len(self.solutions)-2][i]} + {sol[i]}λ", end="")
-                    else:
-                        print(
-                            f"{self.solutions[len(self.solutions)-2][i]} - {Fraction(-1,1)*sol[i]}λ", end="")
-                    if i < len(sol) - 1:
-                        print("; ", end="")
-                print("]")
-                print(f"Z = {self.functionZ[len(self.functionZ)-1]}")
+                self.__printMultipleSolutions()
+                self.__printZSolution()
                 break
 
     def solve(self) -> None:
