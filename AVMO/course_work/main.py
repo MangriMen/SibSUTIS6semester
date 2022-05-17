@@ -335,7 +335,8 @@ class DualSimplexMethod:
         while True:
             if self.__negativeExist(self.function_m):
                 j = self.__findNegative(self.function_m)
-                i = self.__findSR(j)
+                if (i := self.__findSR(j)) == -1:
+                    return False
 
                 self.__step(i, j, True)
             else:
@@ -346,7 +347,8 @@ class DualSimplexMethod:
         while True:
             if self.__negativeExist(self.function_z, True):
                 j = self.__findNegative(self.function_z, True)
-                i = self.__findSR(j)
+                if (i := self.__findSR(j)) == -1:
+                    return False
 
                 self.__step(i, j, False)
             else:
@@ -354,7 +356,8 @@ class DualSimplexMethod:
                     self.__printZSolution()
                     self.solutionsZ.append(self.function_z[-1])
                     break
-                i = self.__findSR(j)
+                if (i := self.__findSR(j)) == -1:
+                    return False
 
                 self.__step(i, j, False)
 
@@ -364,9 +367,11 @@ class DualSimplexMethod:
 
     def solve(self) -> None:
         if not self.__solveByM():
-            print("Constraint system is inconsistent")
+            print("\n---Constraint system is inconsistent---")
             return
-        self.__solveByZ()
+        if not self.__solveByZ():
+            print("\n---Constraint system is inconsistent---")
+            return
 
         try:
             self.__print_simplex_table_with_z()
