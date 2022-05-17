@@ -2,11 +2,25 @@
 #include <stdlib.h>
 #include <cublas_v2.h>
 #include <fstream>
+#include <string>
 
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
+    int n = 1 << 24;
+
+    if (argc > 1)
+    {
+        n = stoll(argv[1]);
+    }
+    else
+    {
+        return EXIT_FAILURE;
+    }
+
+    const size_t size_in_bytes = (n * sizeof(float));
+
     cudaEvent_t startGlobal;
     cudaEvent_t endGlobal;
     cudaEvent_t startLocal;
@@ -18,9 +32,6 @@ int main()
     cudaEventCreate(&endLocal);
 
     cudaEventRecord(startGlobal);
-
-    const int n = 1 << 24;
-    const size_t size_in_bytes = (n * sizeof(float));
 
     float *A_dev = NULL;
     cudaMalloc((void **)&A_dev, size_in_bytes);

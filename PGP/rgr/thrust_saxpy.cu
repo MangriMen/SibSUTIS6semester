@@ -26,9 +26,18 @@ void saxpy(float a, thrust::device_vector<float> &x,
     thrust::transform(x.begin(), x.end(), y.begin(), y.begin(), func);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    const int n = 1 << 24;
+    int n = 1 << 24;
+
+    if (argc > 1)
+    {
+        n = stoll(argv[1]);
+    }
+    else
+    {
+        return EXIT_FAILURE;
+    }
 
     cudaEvent_t startGlobal;
     cudaEvent_t endGlobal;

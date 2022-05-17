@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 
 using namespace std;
 
@@ -13,9 +14,18 @@ __global__ void saxpy(int n, float a, float *__restrict x, float *__restrict y)
     }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    const int n = 1 << 24;
+    int n = 1 << 24;
+
+    if (argc > 1)
+    {
+        n = stoll(argv[1]);
+    }
+    else
+    {
+        return EXIT_FAILURE;
+    }
 
     cudaEvent_t startGlobal, endGlobal, startLocal, endLocal;
     cudaEventCreate(&startGlobal);
