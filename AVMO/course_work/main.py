@@ -1,4 +1,6 @@
 from array import array
+from pprint import pprint
+from tkinter.messagebox import NO
 from my_fraction import Fraction
 
 isCompact = True
@@ -110,6 +112,7 @@ class DualSimplexMethod:
         self.excluded = []
         self.solution = []
         self.solutions = []
+        self.solutionsZ = []
         self.basis = []
 
         self.loadFromFile(filename)
@@ -298,6 +301,16 @@ class DualSimplexMethod:
                 print("; ", end="")
         print("]")
 
+    def __print_simplex_table_with_z(self):
+        cell_width = len(self.solutions[0]) * 5
+        print(createLineSplitter(cell_width, 2, "top"))
+        for solution, z_value in zip(self.solutions, self.solutionsZ):
+            out = ""
+            out += createCell(solution, cell_width, True)
+            out += createCell(z_value, cell_width)
+            print(out)
+        print(createLineSplitter(cell_width, 2, "bottom"))
+
     def __changeBasis(self, i, j, toExclude=False):
         bas = self.__findprevious(i)
 
@@ -309,6 +322,7 @@ class DualSimplexMethod:
         self.basis.sort()
 
     def __step(self, i, j, isExcludeBasis=False):
+        self.solutionsZ.append(self.function_z[-1])
         self.__changeBasis(i, j, isExcludeBasis)
         self.__jordan((i, j))
         self.__makesolution(self.basis)
@@ -338,6 +352,7 @@ class DualSimplexMethod:
             else:
                 if (j := self.__doubleCheck()) == -1:
                     self.__printZSolution()
+                    self.solutionsZ.append(self.function_z[-1])
                     break
                 i = self.__findSR(j)
 
@@ -352,6 +367,11 @@ class DualSimplexMethod:
             print("Constraint system is inconsistent")
             return
         self.__solveByZ()
+
+        try:
+            self.__print_simplex_table_with_z()
+        except:
+            pass
 
 
 def main() -> None:
