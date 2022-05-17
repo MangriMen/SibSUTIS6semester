@@ -1,4 +1,4 @@
-.PHONY: run debug clear rgr test
+.PHONY: run debug clear rgr test clear_result test_native test_thrust test_cublas test_opengl
 
 CXX=cl
 CXXFLAGS=/std:c++17 /EHsc /MT /O2
@@ -17,6 +17,9 @@ WINDOWS_LIBS=user32.lib gdi32.lib shell32.lib vcruntime.lib msvcrt.lib
 
 SOURCES=opengl_compute_shaders.cpp
 NAME=opengl_compute_shaders.exe
+
+SIZES=1048576 2097152 4194304 8388608 16777216 33554432 67108864 134217728 268435456
+
 
 !if "$(VSCMD_ARG_HOST_ARCH)" == "x64"
 DIR_LIB=$(DIR_LIB_x64)
@@ -43,12 +46,27 @@ rgr:
 	nvcc cublas_saxpy.cu -lcublas -o cublas_saxpy.exe
 	$(CXX) $(CXXFLAGS) $(SOURCES) /I $(DIR_INCLUDE) /Fe:$(NAME) /link $(LINKER_FLAGS) /LIBPATH:$(DIR_LIB) $(LIBS) $(WINDOWS_LIBS)
 
-test:
+test: clear_result test_native test_thrust test_cublas test_opengl
+
+clear_result:
 	del result.csv
-	.\native_saxpy.exe
-	.\thrust_saxpy.exe
-	.\cublas_saxpy.exe
-	.\$(NAME)
+
+test_native:
+	for %%G in ($(SIZES)) \
+	DO \
+	.\native_saxpy.exe %%G
+test_thrust:
+	for %%G in ($(SIZES)) \
+	DO \
+	.\thrust_saxpy.exe %%G
+test_cublas:
+	for %%G in ($(SIZES)) \
+	DO \
+	.\cublas_saxpy.exe %%G
+test_opengl:
+	for %%G in ($(SIZES)) \
+	DO \
+	.\$(NAME) %%G
 
 $(DIR_BIN_RELEASE)\$(NAME):
 	if not exist $(DIR_BIN_RELEASE) mkdir $(DIR_BIN_RELEASE)
