@@ -364,6 +364,7 @@ class DualSimplexMethod:
                 self.__printMultipleSolutions()
                 self.__printZSolution()
                 break
+        return True
 
     def solve(self) -> None:
         if not self.__solveByM():
