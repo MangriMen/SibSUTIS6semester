@@ -264,10 +264,10 @@ class FTPServer:
         if os.path.exists(data):
             shutil.rmtree(data)
             self.send_msg(
-                conn, "250 Requested file action okay, completed\r\n")
+                conn, "250 Requested directory action okay, completed\r\n")
         else:
             self.send_msg(
-                conn, "550 Requested action not taken; file unavailable...\r\n")
+                conn, "550 Requested action not taken; directory unavailable...\r\n")
 
     def __cmd_mkd(self, conn, data):
         os.mkdir(data)
