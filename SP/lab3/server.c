@@ -23,9 +23,11 @@ typedef struct thread_data
     FILE *log_file;
 } thread_data_t;
 
+pthread_mutex_t st_mutex;
+
 void *threadListener(void *args)
 {
-    pthread_detach(pthread_self());
+    pthread_detach(pthread_self()); // Делает данный поток независимым от родительского процесса
 
     thread_data_t *data = (thread_data_t *)args;
     int sockClient = data->socketId;
@@ -53,10 +55,10 @@ void *threadListener(void *args)
         printf("\tДлина сообщения: %d\n", msgLength);
         printf("\tСообщение: %s\n\n", buf);
 
-        flockfile(log_file);
+        pthread_mutex_lock(&st_mutex);
         fprintf(log_file, "%d:%s\n", sockClient, buf);
-        funlockfile(log_file);
         fflush(log_file);
+        pthread_mutex_unlock(&st_mutex);
     }
 }
 
