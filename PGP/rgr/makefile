@@ -18,8 +18,7 @@ WINDOWS_LIBS=user32.lib gdi32.lib shell32.lib vcruntime.lib msvcrt.lib
 SOURCES=opengl_compute_shaders.cpp
 NAME=opengl_compute_shaders.exe
 
-SIZES=1048576 2097152 4194304 8388608 16777216 33554432 67108864 134217728 268435456
-
+SIZES=1048576 2097152 4194304 8388608 16777216 33554432 67108864 134217728 268435456 536870912
 
 !if "$(VSCMD_ARG_HOST_ARCH)" == "x64"
 DIR_LIB=$(DIR_LIB_x64)
@@ -54,19 +53,19 @@ clear_result:
 test_native:
 	for %%G in ($(SIZES)) \
 	DO \
-	.\native_saxpy.exe %%G
+		.\native_saxpy.exe %%G
 test_thrust:
 	for %%G in ($(SIZES)) \
 	DO \
-	.\thrust_saxpy.exe %%G
+		.\thrust_saxpy.exe %%G
 test_cublas:
 	for %%G in ($(SIZES)) \
 	DO \
-	.\cublas_saxpy.exe %%G
+		.\cublas_saxpy.exe %%G
 test_opengl:
 	for %%G in ($(SIZES)) \
 	DO \
-	.\$(NAME) %%G
+		.\$(NAME)
 
 $(DIR_BIN_RELEASE)\$(NAME):
 	if not exist $(DIR_BIN_RELEASE) mkdir $(DIR_BIN_RELEASE)
