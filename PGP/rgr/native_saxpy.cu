@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
 
     if (argc > 1)
     {
-        n = stoll(argv[1]);
+        n = stoi(argv[1]);
     }
     else
     {
@@ -52,7 +54,7 @@ int main(int argc, char *argv[])
     cudaMemcpy(cudaArr, hostArr, n * sizeof(float), cudaMemcpyHostToDevice);
 
     cudaEventRecord(startLocal);
-    saxpy<<<4096, 256>>>(n, 2.0, cudaArr, cudaArrRes);
+    saxpy<<<512, 32>>>(n, 2.0, cudaArr, cudaArrRes);
     cudaEventRecord(endLocal);
     cudaEventSynchronize(endLocal);
 
@@ -78,10 +80,11 @@ int main(int argc, char *argv[])
     cudaEventDestroy(startLocal);
     cudaEventDestroy(endLocal);
 
+    cudaFree(cudaArr);
+    cudaFree(cudaArrRes);
+
     free(hostArr);
     free(hostArrRes);
-    free(cudaArr);
-    free(cudaArrRes);
 
     return EXIT_SUCCESS;
 }

@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
     if (argc > 1)
     {
-        n = stoll(argv[1]);
+        n = stoi(argv[1]);
     }
     else
     {
@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
     cudaFreeHost(B_h);
 
     cudaEventRecord(endGlobal);
+    cudaEventSynchronize(endGlobal);
 
     float globalElapsedTime = 0;
     cudaEventElapsedTime(&globalElapsedTime, startGlobal, endGlobal);

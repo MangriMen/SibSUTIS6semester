@@ -4,6 +4,8 @@
 #include <thrust/fill.h>
 #include <thrust/sequence.h>
 #include <fstream>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -32,13 +34,12 @@ int main(int argc, char *argv[])
 
     if (argc > 1)
     {
-        n = stoll(argv[1]);
+        n = stoi(argv[1]);
     }
     else
     {
         return EXIT_FAILURE;
     }
-
     cudaEvent_t startGlobal;
     cudaEvent_t endGlobal;
     cudaEvent_t startLocal;
@@ -67,6 +68,7 @@ int main(int argc, char *argv[])
     h1 = d1;
 
     cudaEventRecord(endGlobal);
+    cudaEventSynchronize(endGlobal);
 
     float globalElapsedTime = 0;
     cudaEventElapsedTime(&globalElapsedTime, startGlobal, endGlobal);
