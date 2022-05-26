@@ -94,6 +94,17 @@ const char *saxpyComputeShaderSource = // Compute Shader
 
 int main()
 {
+	int n = 1 << 24;
+
+	if (argc > 1)
+	{
+		n = stoi(argv[1]);
+	}
+	else
+	{
+		return EXIT_FAILURE;
+	}
+
 	chrono::steady_clock::time_point startGlobal, endGlobal, startLocal, endLocal;
 
 	startGlobal = chrono::high_resolution_clock::now();
@@ -191,7 +202,7 @@ int main()
 
 	glUseProgram(computeProgram);
 	startLocal = chrono::high_resolution_clock::now();
-	glDispatchCompute(1 << 24, 1, 1);
+	glDispatchCompute(n, 1, 1);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	endLocal = chrono::high_resolution_clock::now();
 
